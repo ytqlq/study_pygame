@@ -1,5 +1,5 @@
 import pygame
-import sys
+# import sys
 import random
 
 screen_w = 600
@@ -52,15 +52,11 @@ def main():
     while True:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                sys.exit()
+                return
         pygame.display.update()
+    # pygame.quit()
     
-                
-    
-
-
-
-
+ 
 if __name__ == '__main__':
     main()
-    # pygame.quit()
+    pygame.quit()
