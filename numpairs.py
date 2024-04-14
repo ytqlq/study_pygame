@@ -2,6 +2,7 @@ import pygame
 # import sys
 import random
 
+
 screen_w = 600
 screen_h = 800
 row = 7
@@ -22,8 +23,7 @@ def getanothernum(num):
         return random.choice(l)
  
      
-def getnumpair(typeface = typeface, fontsize = fontsize, fontcolor = fontcolor):
-    
+def getnumpair(typeface = typeface, fontsize = fontsize, fontcolor = fontcolor):    
     upnum = random.randint(0,9) 
     downnum = getanothernum(upnum)    
     numfont = pygame.font.SysFont(typeface,fontsize)
@@ -34,6 +34,7 @@ def getnumpair(typeface = typeface, fontsize = fontsize, fontcolor = fontcolor):
 
 def main():
     pygame.init()
+    c = pygame.time.Clock()
     screen = pygame.display.set_mode((screen_w,screen_h))    
     block_h = 90
     topspace = (screen_h - block_h * row)//2
@@ -53,7 +54,12 @@ def main():
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 return
+            # if e.type == pygame.MOUSEBUTTONDOWN:                
+            #     m_pos = pygame.mouse.get_pos()
+            #     if m_pos[0] 
+        
         pygame.display.update()
+        c.tick(60)
     # pygame.quit()
     
  
