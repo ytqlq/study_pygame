@@ -40,16 +40,20 @@ def main():
     topspace = (screen_h - block_h * row)//2
     block_w = fontsize
     leftspace = (screen_w - block_w * col)//2
+    l_flag = [] # 上下两块的合起来的块。存入list.
     for i in range(row):
+        l_flag.append([])
         pygame.draw.line(screen, linecolor, (leftspace, topspace + fontsize +fontspace//2+ i * block_h), (screen_w - leftspace, topspace + fontsize +fontspace//2 + i * block_h) )
         for j in range(col):
             upnum, downnum = getnumpair()
-            uprect = pygame.Rect((leftspace + j * block_w, topspace + i * block_h), (block_w, block_w))
+            uprect = pygame.Rect((leftspace + j * block_w, topspace + i * block_h), (block_w, fontsize))
             downrect = uprect.move(0, fontsize +fontspace)
+            flag_rect = uprect.union(downrect)
+            # print(flag_rect.topleft == uprect.topleft)
+            l_flag[i].append(flag_rect)            
             screen.blit(upnum,uprect)
-            screen.blit(downnum,downrect)
-    
-    
+            screen.blit(downnum,downrect) 
+            # print(l_flag)      
     while True:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -57,8 +61,19 @@ def main():
             # if e.type == pygame.MOUSEBUTTONDOWN:                
             #     m_pos = pygame.mouse.get_pos()
             #     if m_pos[0] 
-        
+        if pygame.mouse.get_pressed()[0]:
+            x,y = pygame.mouse.get_pos()
+            for item in l_flag:
+                for i in item:
+                    if i.collidepoint(x,y):
+                        # print('mousepressed.')
+                        # pygame.draw.ellipse(screen,'red',i)
+                        pygame.draw.arc(screen,'red',i,0,6.28,2)
+                        
+                        ...
+            
         pygame.display.update()
+        # pygame.time.wait(1000)
         c.tick(60)
     # pygame.quit()
     
