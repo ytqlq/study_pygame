@@ -30,7 +30,7 @@ def getnumpair(typeface = typeface, fontsize = fontsize, fontcolor = fontcolor):
     numfont = pygame.font.SysFont(typeface,fontsize)
     upnumsurface = numfont.render(str(upnum), True, fontcolor)
     downnumsurface = numfont.render(str(downnum), True, fontcolor)    
-    return (upnumsurface, downnumsurface)
+    return (upnumsurface, downnumsurface, upnum == downnum)
 
 
 def calscore():
@@ -53,7 +53,8 @@ def main():
             uprect = pygame.Rect((leftspace + j * block_w, topspace + i * block_h), (block_w, fontsize))
             downrect = uprect.move(0, fontsize +fontspace)
             
-            upnum, downnum = getnumpair()
+            upnum, downnum, same = getnumpair()
+            
             upnumrect = upnum.get_rect()
             upnumrect.center = uprect.center
             downnumrect = downnum.get_rect()
@@ -62,7 +63,7 @@ def main():
             flag_rect = uprect.union(downrect)
             # print(flag_rect.topleft == uprect.topleft)
             # l_flag[i].append(flag_rect)            
-            l_flag.append(flag_rect)    
+            l_flag.append((flag_rect,same))    
             screen.blit(upnum,upnumrect)
             screen.blit(downnum,downnumrect) 
             # print(l_flag)      
@@ -73,7 +74,7 @@ def main():
     while True:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                print('Total score:{0}'.format(finalscore))
+                print('Total score:{0}'.format(finalscore - len(wronganswerrect)))
                 sys.exit()
             # if e.type == pygame.MOUSEBUTTONDOWN:                
             #     m_pos = pygame.mouse.get_pos()
@@ -82,7 +83,7 @@ def main():
         mps = pygame.mouse.get_pressed()
         if mps[0]:
             x,y = pygame.mouse.get_pos()
-            for i in l_flag:
+            for i, same in l_flag:
                 # for i in item:
                 if i.collidepoint(x,y):
                     # print('mousepressed.')
@@ -93,6 +94,9 @@ def main():
                         finalscore += 1
                         print('add {0}'.format(finalscore))
                     # 记录上下数字不一致的rect,保存到数组中。
+                        if same:
+                            wronganswerrect.append(arcrect)
+                            
                           
         if mps[2]:# 点右键去掉椭圆标记。
             x,y = pygame.mouse.get_pos()
@@ -101,7 +105,10 @@ def main():
                     screen.blit(screencp,r,r)
                     finalscore -= 1
                     existarcrect.remove(r)
+                    if r in wronganswerrect:
+                        wronganswerrect.remove(r)
                     print("-{0}".format(finalscore))
+                    
             
         # pygame.time.wait(1000)
         pygame.display.update()
