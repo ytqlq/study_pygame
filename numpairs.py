@@ -12,6 +12,7 @@ fontsize = 35
 typeface = 'arial'
 fontspace = 2
 linecolor = 'red'
+flagcolor = 'red'
 
 def getanothernum(num):
     TFtest = [True] * 6 + [False] * 3
@@ -32,6 +33,10 @@ def getnumpair(typeface = typeface, fontsize = fontsize, fontcolor = fontcolor):
     return (upnumsurface, downnumsurface)
 
 
+def calscore():
+    
+    ...
+
 def main():
     pygame.init()
     c = pygame.time.Clock()
@@ -42,7 +47,7 @@ def main():
     leftspace = (screen_w - block_w * col)//2
     l_flag = [] # 上下两块的合起来的块。存入list.
     for i in range(row):
-        l_flag.append([])
+        # l_flag.append([])
         pygame.draw.line(screen, linecolor, (leftspace, topspace + fontsize +fontspace//2+ i * block_h), (screen_w - leftspace, topspace + fontsize +fontspace//2 + i * block_h) )
         for j in range(col):            
             uprect = pygame.Rect((leftspace + j * block_w, topspace + i * block_h), (block_w, fontsize))
@@ -56,29 +61,49 @@ def main():
             
             flag_rect = uprect.union(downrect)
             # print(flag_rect.topleft == uprect.topleft)
-            l_flag[i].append(flag_rect)            
-            
+            # l_flag[i].append(flag_rect)            
+            l_flag.append(flag_rect)    
             screen.blit(upnum,upnumrect)
             screen.blit(downnum,downnumrect) 
             # print(l_flag)      
+    existarcrect = []
+    screencp = screen.copy()
+    finalscore = 0
+    wronganswerrect = []
     while True:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
+                print('Total score:{0}'.format(finalscore))
                 sys.exit()
             # if e.type == pygame.MOUSEBUTTONDOWN:                
             #     m_pos = pygame.mouse.get_pos()
             #     if m_pos[0] 
-        if pygame.mouse.get_pressed()[0]:
+         
+        mps = pygame.mouse.get_pressed()
+        if mps[0]:
             x,y = pygame.mouse.get_pos()
-            for item in l_flag:
-                for i in item:
-                    if i.collidepoint(x,y):
-                        # print('mousepressed.')
-                        # pygame.draw.ellipse(screen,'red',i)
-                        pygame.draw.arc(screen,'red',i,0,6.28,2)
-                        
-                        ...
+            for i in l_flag:
+                # for i in item:
+                if i.collidepoint(x,y):
+                    # print('mousepressed.')
+                    # pygame.draw.ellipse(screen,'red',i)
+                    arcrect = pygame.draw.arc(screen,flagcolor,i,0,6.28,2)
+                    if arcrect not in existarcrect:
+                        existarcrect.append(arcrect)
+                        finalscore += 1
+                        print('add {0}'.format(finalscore))
+                    # 记录上下数字不一致的rect,保存到数组中。
+                          
+        if mps[2]:# 点右键去掉椭圆标记。
+            x,y = pygame.mouse.get_pos()
+            for r in existarcrect:
+                if r.collidepoint(x,y):
+                    screen.blit(screencp,r,r)
+                    finalscore -= 1
+                    existarcrect.remove(r)
+                    print("-{0}".format(finalscore))
             
+        # pygame.time.wait(1000)
         pygame.display.update()
         # pygame.time.wait(1000)
         c.tick(60)
