@@ -1,5 +1,5 @@
 import pygame
-# import sys
+import sys
 import random
 
 
@@ -44,20 +44,27 @@ def main():
     for i in range(row):
         l_flag.append([])
         pygame.draw.line(screen, linecolor, (leftspace, topspace + fontsize +fontspace//2+ i * block_h), (screen_w - leftspace, topspace + fontsize +fontspace//2 + i * block_h) )
-        for j in range(col):
-            upnum, downnum = getnumpair()
+        for j in range(col):            
             uprect = pygame.Rect((leftspace + j * block_w, topspace + i * block_h), (block_w, fontsize))
             downrect = uprect.move(0, fontsize +fontspace)
+            
+            upnum, downnum = getnumpair()
+            upnumrect = upnum.get_rect()
+            upnumrect.center = uprect.center
+            downnumrect = downnum.get_rect()
+            downnumrect.center = downrect.center
+            
             flag_rect = uprect.union(downrect)
             # print(flag_rect.topleft == uprect.topleft)
             l_flag[i].append(flag_rect)            
-            screen.blit(upnum,uprect)
-            screen.blit(downnum,downrect) 
+            
+            screen.blit(upnum,upnumrect)
+            screen.blit(downnum,downnumrect) 
             # print(l_flag)      
     while True:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                return
+                sys.exit()
             # if e.type == pygame.MOUSEBUTTONDOWN:                
             #     m_pos = pygame.mouse.get_pos()
             #     if m_pos[0] 
