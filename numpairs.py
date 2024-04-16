@@ -50,7 +50,7 @@ def showfinalscore(score:int, answer:int, dessurface:pygame.Surface, color = sco
     # print(score_rect.x, score_rect.y)
     dessurface.blit(score_sf,score_rect)
     
-    # return score_sf
+  
 
 
 
@@ -105,9 +105,7 @@ def main():
             if e.type == pygame.QUIT:
                 # print('Total score:{0}/{1}'.format((finalscore - len(wronganswerrect)),countwrong))
                 sys.exit()
-            # if e.type == pygame.MOUSEBUTTONDOWN:                
-            #     m_pos = pygame.mouse.get_pos()
-            #     if m_pos[0] 
+            
             
         mps = pygame.mouse.get_pressed()
         if mps[0]:
@@ -128,8 +126,7 @@ def main():
                         if arcrect not in existarcrect:
                             existarcrect.append(arcrect)
                             finalscore += 1
-                            # print('add {0}'.format(finalscore))
-                        # 记录上下数字不一致的rect,保存到数组中。
+                      
                             if same:
                                 wronganswerrect.append(arcrect)
                          
