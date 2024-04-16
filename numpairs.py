@@ -12,7 +12,7 @@ fontsize = 35
 typeface = 'arial'
 fontspace = 2
 linecolor = 'red'
-flagcolor = 'red'
+flagcolor = 'blue'
 rate = 0.33 # 控制出现错误数字对的概率。
 fps = 60 #刷新频率
 scorecolor = 'white'
@@ -24,6 +24,7 @@ commit_font_color = 'blue'
 commit_font_size = 60
 commit_w = screen_w/2
 commit_h = 90
+wronganscolor = 'red'
 
 def getanothernum(num):
     falserate = int(9*rate)
@@ -49,9 +50,15 @@ def showfinalscore(score:int, answer:int, dessurface:pygame.Surface, color = sco
     score_rect = score_sf.get_rect(centerx = dessurface.get_rect().centerx, y = 10)
     # print(score_rect.x, score_rect.y)
     dessurface.blit(score_sf,score_rect)
+    # todo showwrong
     
-  
-
+def showwrong(list_rect:list[pygame.Rect],currentsurface:pygame.Surface,copysuface:pygame.Surface,color = wronganscolor):
+    '''
+    圈示错误答案
+    '''
+    for i in list_rect:
+        currentsurface.blit(copysuface,i,i) # 屏幕还原
+        pygame.draw.arc(currentsurface,color,i,0,6.28,2)
 
 
 def main():
@@ -111,7 +118,8 @@ def main():
         if mps[0]:
             x,y = pygame.mouse.get_pos()
             if commit_font_rect.collidepoint(x,y) and not showscore:
-                showfinalscore(finalscore - len(wronganswerrect), countwrong, screen)
+                showfinalscore(finalscore - len(wronganswerrect), countwrong, screen)                
+                showwrong(wronganswerrect,screen,screencp)
                 showscore = True
                 # return
                 # print('gg')
