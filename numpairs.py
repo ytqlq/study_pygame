@@ -33,9 +33,7 @@ def getnumpair(typeface = typeface, fontsize = fontsize, fontcolor = fontcolor):
     return (upnumsurface, downnumsurface, upnum == downnum)
 
 
-def calscore():
-    
-    ...
+
 
 def main():
     pygame.init()
@@ -92,7 +90,7 @@ def main():
                     if arcrect not in existarcrect:
                         existarcrect.append(arcrect)
                         finalscore += 1
-                        print('add {0}'.format(finalscore))
+                        # print('add {0}'.format(finalscore))
                     # 记录上下数字不一致的rect,保存到数组中。
                         if same:
                             wronganswerrect.append(arcrect)
@@ -107,7 +105,7 @@ def main():
                     existarcrect.remove(r)
                     if r in wronganswerrect:
                         wronganswerrect.remove(r)
-                    print("-{0}".format(finalscore))
+                    # print("-{0}".format(finalscore))
                     
             
         # pygame.time.wait(1000)
