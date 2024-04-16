@@ -25,6 +25,7 @@ commit_font_size = 60
 commit_w = screen_w/2
 commit_h = 90
 wronganscolor = 'red'
+nongetanscolor = 'purple'
 
 def getanothernum(num):
     falserate = int(9*rate)
@@ -52,7 +53,7 @@ def showfinalscore(score:int, answer:int, dessurface:pygame.Surface, color = sco
     dessurface.blit(score_sf,score_rect)
     # todo showwrong
     
-def showwrong(list_rect:list[pygame.Rect],currentsurface:pygame.Surface,copysuface:pygame.Surface,color = wronganscolor):
+def showans(list_rect:list[pygame.Rect],currentsurface:pygame.Surface,copysuface:pygame.Surface,color = wronganscolor):
     '''
     圈示错误答案
     '''
@@ -60,6 +61,15 @@ def showwrong(list_rect:list[pygame.Rect],currentsurface:pygame.Surface,copysufa
         currentsurface.blit(copysuface,i,i) # 屏幕还原
         pygame.draw.arc(currentsurface,color,i,0,6.28,2)
 
+def analyse_answer(right_answers, answers):
+    not_get = right_answers[:]
+    wrong_ans = []
+    for item in answers:
+        if item in right_answers:
+            not_get.remove(item)
+        else:
+            wrong_ans.append(item)
+    return not_get,wrong_ans
 
 def main():
     pygame.init()
@@ -71,7 +81,8 @@ def main():
     block_w = fontsize
     leftspace = (screen_w - block_w * col)//2
     l_flag = [] # 上下两块的合起来的块。存入list.
-    countwrong = 0 # 统计出题时的不一样对的数量，最后输出成绩时使用，表达正确率。
+    # countwrong = 0 # 统计出题时的不一样对的数量，最后输出成绩时使用，表达正确率。
+    right_answer = []
     for i in range(row):
         # l_flag.append([])
         pygame.draw.line(screen, linecolor, (leftspace, topspace + fontsize +fontspace//2+ i * block_h), (screen_w - leftspace, topspace + fontsize +fontspace//2 + i * block_h) )
@@ -80,8 +91,9 @@ def main():
             downrect = uprect.move(0, fontsize +fontspace)
             
             upnum, downnum, same = getnumpair()
-            if not same:
-                countwrong += 1
+            # if not same:
+            #     countwrong += 1
+                # right_answer.append
             upnumrect = upnum.get_rect()
             upnumrect.center = uprect.center
             downnumrect = downnum.get_rect()
@@ -97,7 +109,7 @@ def main():
     existarcrect = []
     screencp = screen.copy()
     finalscore = 0
-    wronganswerrect = []
+    # wronganswerrect = []
     
     commitfont = pygame.font.Font(None,commit_font_size)
     commitsf = commitfont.render('COMMIT', 1, commit_font_color, commit_bg_color)        
@@ -111,21 +123,26 @@ def main():
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 # print('Total score:{0}/{1}'.format((finalscore - len(wronganswerrect)),countwrong))
-                sys.exit()
-            
+                sys.exit()            
             
         mps = pygame.mouse.get_pressed()
         if mps[0]:
             x,y = pygame.mouse.get_pos()
             if commit_font_rect.collidepoint(x,y) and not showscore:
-                showfinalscore(finalscore - len(wronganswerrect), countwrong, screen)                
-                showwrong(wronganswerrect,screen,screencp)
+                # no_get_ans = list(set(right_answer) - (set(existarcrect) - set(wronganswerrect)))
+                no_get_ans, wronganswerrect = analyse_answer(right_answer, existarcrect)
+                showfinalscore(finalscore - len(wronganswerrect), len(right_answer), screen)                
+                showans(wronganswerrect,screen,screencp)
+                showans(no_get_ans,screen,screencp,color=nongetanscolor)
                 showscore = True
                 # return
                 # print('gg')
                 
             for i, same in l_flag:
                 # for i in item:
+                if not same and i not in right_answer:#获取正确答案数据
+                    right_answer.append(i)
+                
                 if i.collidepoint(x,y):
                     # print('mousepressed.')
                     # pygame.draw.ellipse(screen,'red',i)
@@ -135,8 +152,8 @@ def main():
                             existarcrect.append(arcrect)
                             finalscore += 1
                       
-                            if same:
-                                wronganswerrect.append(arcrect)
+                            # if same:
+                            #     wronganswerrect.append(arcrect)
                          
         if mps[2]:# 点右键去掉椭圆标记。
             x,y = pygame.mouse.get_pos()
@@ -146,8 +163,8 @@ def main():
                         screen.blit(screencp,r,r)
                         finalscore -= 1
                         existarcrect.remove(r)
-                        if r in wronganswerrect:
-                            wronganswerrect.remove(r)
+                        # if r in wronganswerrect:
+                        #     wronganswerrect.remove(r)
                     
             
         
