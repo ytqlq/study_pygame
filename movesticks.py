@@ -31,7 +31,8 @@ color_circle = (
 circlescale = 0.8
 
 
-def drawtable(
+
+def drawtable(dessurface:pygame.Surface,
     block_w=block_w,
     rowcol=colornum,
     color=color_line,
@@ -49,8 +50,9 @@ def drawtable(
     for i in range(rowcol + 1):
         pygame.draw.line(sf, color, (0, i * block_w), (rowcol * block_w, i * block_w))
         pygame.draw.line(sf, color, (i * block_w, 0), (i * block_w, rowcol * block_w))
-    
-    return sf
+    sf_rect = sf.get_rect(center = dessurface.get_rect().center)
+    dessurface.blit(sf,sf_rect)
+    return sf_rect
 
 
 class Stick:
@@ -58,28 +60,47 @@ class Stick:
         self.color = color
         self.des_rect = des_rect
         self.radius = self.des_rect.w / 2 * scale
+        self.circle_rect = pygame.Rect((0,0),(w := self.radius*2,w))
+        self.circle_rect.center = self.des_rect.center
 
     def drawcircle(self, dessurface: pygame.Surface):
-        self.circle_rect = pygame.draw.circle(
-            dessurface, self.color, self.des_rect.center, self.radius
+        return pygame.draw.circle(
+            dessurface, self.color, self.circle_rect.center, self.radius
         )
-    def delete(self,dessurface: pygame.Surface,dessfcp:pygame.Surface):
+        
+        # pygame.draw.circle()
+    def delete(self,dessurface: pygame.Surface,dessfcp:pygame.Surface):          
         
         dessurface.blit(dessfcp,self.circle_rect,self.circle_rect)
+        self.color = None
+    def upate(self,mousecolor,dessurface:pygame.Surface, dessfccp:pygame.Surface):
+        # color = dessuface.get_at(self.circle_rect.centerx)
+        # precolor = dessfccp.get_at(self.circle_rect.center)
+        tmpcolor = mousecolor
+        mousecolor = self.color
+        self.color = tmpcolor
+        if self.color:
+            self.drawcircle(dessurface)
+        else:
+            dessurface.blit(dessfccp,self.circle_rect,self.circle_rect)    
+        return mousecolor    
+            
+        
         
         
         
 
 
 def draw_all_sticks(
-    dessurface: pygame.Surface, total=colornum, line_width=line_width, block_w=block_w
-):
+    sf_rect:pygame.Rect, dessurface: pygame.Surface, total=colornum, line_width=line_width, block_w=block_w
+): 
     d_color = dict.fromkeys(color_circle, 0)
     # l_stick_rects = []
+    offset = (sf_rect.x - dessurface.get_rect().x, sf_rect.y - dessurface.get_rect().y)
     sticks = []
     for i in range(total):
         for j in range(total):
-            pos = (i * block_w, j * block_w)
+            pos = (i * block_w+ offset[0], j * block_w+offset[1])
 
             circle_color = random.choice(color_circle)
             while d_color[circle_color] >= 7:
@@ -96,40 +117,62 @@ def draw_all_sticks(
     return sticks
     
 
+    
 
 def main():
     pygame.init()
+    fps = 60
+    c = pygame.time.Clock()
     screen = pygame.display.set_mode(sc_size, pygame.SCALED)
     # 画表格
     # screen.fill(bg_color)
-
-    sf = drawtable()
-    sfcp = sf.copy()
-    sticks = draw_all_sticks(sf)
     
-    sf_rect = sf.get_rect(center=screen.get_rect().center)
-    offset = (sf_rect.x - screen.get_rect().x, sf_rect.y - screen.get_rect().y)
-    # for item in sticks:
-    #     item.circle_rect.move_ip(offset)# 转换成在screen中的rect。
-    screen.blit(sf, sf_rect)
 
-    # pygame.draw.circle()
+    sf_rect = drawtable(screen)
+    screencp = screen.copy()
+    sticks = draw_all_sticks(sf_rect,screen)
+    # print(sticks)
+    
+   
     running = True
+    
+    tag = True
+    mouse_color = None
+    i = 0
+    leftpressed = False
     while running:
+        # print(i)
+        
         for e in pygame.event.get():
+            # print(e.__doc__)
             if e.type == pygame.QUIT:
                 running = False
-        mps = pygame.mouse.get_pressed()
-        if mps[0]:
-            pos = pygame.mouse.get_pos()
-            pos = (pos[0]- offset[0], pos[1]-offset[1])
-            for s in sticks:
-                if s.circle_rect.collidepoint(pos):
-                    s.delete(sf,sfcp)
+            if e.type == pygame.MOUSEBUTTONUP:
+                
+                pos = pygame.mouse.get_pos()
+                for s in sticks:
+                    if s.circle_rect.collidepoint(pos):
+                    
+                        if not leftpressed:                        
+                            mouse_color = s.upate(mouse_color,screen,screencp)                                                               
+                        break
             
-        screen.blit(sf,sf_rect)
+        
+        # if leftpressed:
+        #     # pygame.mouse.set_visible(0)
+        #     screencp = screen.copy()
+        mouse_pos = pygame.mouse.get_pos()
+        #     screen.blit(screencp,(0,0))
+        screencp = screen.copy()
+        # if mouse_color is not None:
+        #     pygame.draw.circle(screen,mouse_color,mouse_pos,sticks[0].radius)
+            
+        # if not leftpressed:
+        #     pygame.mouse.set_visible(1)
+        
+        
         pygame.display.update()
-
-
+        c.tick(fps)
+        # i += 1
 if __name__ == "__main__":
     main()
