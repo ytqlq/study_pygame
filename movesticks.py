@@ -143,7 +143,7 @@ def judgesame(sticks:list,num = colornum):
             ref = item.color
             i += 1
             continue
-        print(ref,item.color)
+        # print(ref,item.color)
         if item.color != ref:
             # print("same wrong.")           
             
