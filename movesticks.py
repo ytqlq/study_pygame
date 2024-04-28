@@ -46,7 +46,7 @@ circlescale = 0.8
 # ]
 problems = [
     "让任一行的小木棍的颜色都一样。",
-    "让任一行的小木棍的颜色都不相同",
+    "让任一行不存在颜色相同的小木棍",
 ]
 
 solution = ["judgesame", "judgediff"]
