@@ -5,15 +5,29 @@
 3.开始有计时功能。
 '''
 import pygame
+import random
 
+from pygame.sprite import _Group
 
-
+font = None
+numsize = 80
+num_color = 'black'
 def create_table():
     '''生成一个5＊5的表格，数字随机生成'''
+    l = list(range(1,26))
+    random.shuffle(l)
+    l_table = []
+    for i in range(0,21,5):
+        l_table.append(l[i:i+5])
+    return l_table
+    # print(l_table)
 
-    ...
-
-
+class BlockNum(pygame.sprite.Sprite):
+    def __init__(self, num, numpos:tuple, *groups: AbstractGroup[_SpriteSupportsGroup]) -> None:
+        super().__init__(*groups)
+        font = pygame.font.Font(font,numsize)
+        self.image = font.render(str(num),1,num_color)
+        self.rect = self.image.get_rect(center = numpos) 
 
 
 def main():
@@ -34,6 +48,7 @@ def main():
         pygame.draw.line(bg_surf,"black",(iw := table_rect.left + table_wh/5 *i,table_rect.top),(iw,table_rect.bottom-line_w),width=line_w)
     screen.blit(bg_surf,(0,0))
     pygame.display.flip()
+    numlist = create_table()# 5*5二维数组
 
 
     running = True
