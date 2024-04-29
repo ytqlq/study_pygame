@@ -28,9 +28,43 @@ class BlockNum(pygame.sprite.Sprite):
         font = pygame.font.Font(font,numsize)
         self.image = font.render(str(num),1,num_color)
         self.rect = self.image.get_rect(center = numpos) 
+        self.clicked = False
+        self.num = num
+        
     
     def draw(self,dessurface:pygame.Surface):
         dessurface.blit(self.image,self.rect)
+    
+    def update(self,dessurface:pygame.Surface) -> None:
+        if self.clicked:
+            # print('111111')
+            # self.makeflag()
+            pygame.draw.arc(dessurface,'red',self.rect,0,6.28)
+            self.clicked = False
+            return True
+        return False
+        # return super().update(*args, **kwargs)
+    
+    def makeflag(self):
+        print('111111')
+        pygame.draw.arc(self.image,'red',self.image.get_rect(),0,6.28)
+        # self.image.fill('red')
+        # self.image = pygame.Surface(self.rect.size,masks='red')
+        
+        
+
+    def click(self,rightnum):
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if self.num == rightnum:
+                self.clicked = True
+            return True
+        
+
+    def unclick(self):
+        if self.clicked:
+            self.clicked = False
+        
         
 
 def main():
@@ -53,7 +87,7 @@ def main():
     screen.blit(bg_surf,(0,0))
    
     numlist = create_table()# 5*5二维数组
-
+    numsp = pygame.sprite.RenderPlain()
     for i in range(5):
         for j in range(5):
             numrect = pygame.Rect(table_rect.left + j * table_wh /5, table_rect.top + i * table_wh/5, table_wh /5 + line_w, table_wh/5 + line_w )
@@ -61,15 +95,31 @@ def main():
             num = numlist[i][j]
             blocknum = BlockNum(num, numpos)
             blocknum.draw(screen)
+            numsp.add(blocknum)
     
     pygame.display.flip()        
     
     running = True
+    cur_num = 1
     while running:
+        if cur_num > 25:
+            print("complete.")#结束。
+            running = False
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
-        
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                for item in numsp:
+                    if item.click(cur_num):
+                        if item.update(screen):
+                            cur_num += 1
+                        break
+                        
+                
+            if e.type == pygame.MOUSEBUTTONUP:
+                ...
+        # numsp.update(screen)
+        pygame.display.flip()
     
 if __name__ == '__main__':
     main()
