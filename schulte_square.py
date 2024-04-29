@@ -7,7 +7,7 @@
 import pygame
 import random
 
-from pygame.sprite import _Group
+# from pygame.sprite import _Group
 
 font = None
 numsize = 80
@@ -23,17 +23,21 @@ def create_table():
     # print(l_table)
 
 class BlockNum(pygame.sprite.Sprite):
-    def __init__(self, num, numpos:tuple, *groups: AbstractGroup[_SpriteSupportsGroup]) -> None:
+    def __init__(self, num, numpos:tuple,font = font, *groups) -> None:
         super().__init__(*groups)
         font = pygame.font.Font(font,numsize)
         self.image = font.render(str(num),1,num_color)
         self.rect = self.image.get_rect(center = numpos) 
-
+    
+    def draw(self,dessurface:pygame.Surface):
+        dessurface.blit(self.image,self.rect)
+        
 
 def main():
     pygame.init()
     size = (600,800)
     screen = pygame.display.set_mode(size,pygame.SCALED)
+   
     table_wh = 550
     line_w = 3
     pygame.display.set_caption("Schulte Square")
@@ -47,10 +51,19 @@ def main():
         pygame.draw.line(bg_surf,'black',(table_rect.left,ih := table_rect.top + i * table_wh/5),(table_rect.right-line_w,ih),width=line_w)
         pygame.draw.line(bg_surf,"black",(iw := table_rect.left + table_wh/5 *i,table_rect.top),(iw,table_rect.bottom-line_w),width=line_w)
     screen.blit(bg_surf,(0,0))
-    pygame.display.flip()
+   
     numlist = create_table()# 5*5二维数组
 
-
+    for i in range(5):
+        for j in range(5):
+            numrect = pygame.Rect(table_rect.left + j * table_wh /5, table_rect.top + i * table_wh/5, table_wh /5 + line_w, table_wh/5 + line_w )
+            numpos = numrect.center
+            num = numlist[i][j]
+            blocknum = BlockNum(num, numpos)
+            blocknum.draw(screen)
+    
+    pygame.display.flip()        
+    
     running = True
     while running:
         for e in pygame.event.get():
