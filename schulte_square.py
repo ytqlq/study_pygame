@@ -23,9 +23,9 @@ def create_table():
         l_table.append(l[i : i + 5])
     return l_table
  
-def blitfont(text, font = None,ftsize = 50,color = 'black'):
+def blitfont(text, font = None,ftsize = 50,color = 'black',bgcolor = None):
     ft = pygame.font.Font(font,ftsize)
-    return ft.render(text,1,color)
+    return ft.render(text,1,color,bgcolor)
 
 class BlockNum(pygame.sprite.Sprite):
     def __init__(self, num, numpos: tuple, font=font, *groups) -> None:
@@ -66,13 +66,14 @@ class BlockNum(pygame.sprite.Sprite):
 
 
 
-def show_res(dessurface: pygame.Surface, res_time):
-    dessurface.fill("blue")
-    res_time /= 1000
-    ft = pygame.font.Font(font, 60)
+# def show_res(dessurface: pygame.Surface, res_time,bgcolor=None):
+#     # dessurface.fill("blue")
+#     res_time /= 1000
+#     ft_surf = blitfont("%0.1f" % res_time,font,ftsize=60,bgcolor=bgcolor)
+#     # ft = pygame.font.Font(font, 60)
    
-    ft_surf = ft.render("%0.1f" % res_time, 1, "black", "grey")
-    dessurface.blit(ft_surf, ft_surf.get_rect(center=dessurface.get_rect().center))
+#     # ft_surf = ft.render("%0.1f" % res_time, 1, "black", "grey")
+#     dessurface.blit(ft_surf, ft_surf.get_rect(center=dessurface.get_rect().center))
     
 
 
@@ -132,16 +133,25 @@ def main():
             numsp.add(blocknum)
 
     pygame.display.flip()
-
+    
+    
+    
     running = True
     cur_num = 1
     while running:
+        if cur_num >= 1:
+            cur_time = pygame.time.get_ticks()
+            timesurf = blitfont("%.1f"%(cur_time/1000),ftsize=80,bgcolor='blue')
+            time_rect = timesurf.get_rect(centerx = screen.get_width()//2, y = screen.get_height()-100)
+            
+            screen.blit(timesurf,time_rect)
+        
         if cur_num > 25:
-            couttime = pygame.time.get_ticks()
-            show_res(res_surf, couttime)
-            screen.blit(res_surf, (0, 0))
-            pygame.display.flip()
-          
+            # couttime = pygame.time.get_ticks()
+            # res_surf.fill('blue')
+            # show_res(res_surf, couttime,'grey')
+            # screen.blit(res_surf, (0, 0))
+            # pygame.display.flip()          
             cur_num = 0
 
         for e in pygame.event.get():
