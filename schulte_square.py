@@ -43,7 +43,7 @@ class BlockNum(pygame.sprite.Sprite):
         if self.clicked:
             # print('111111')
             # self.makeflag()
-            pygame.draw.arc(dessurface, "red", self.rect, 0, 6.28)
+            pygame.draw.arc(dessurface, "red", self.rect, 0, 6.28,width=2)
             self.clicked = False
             return True
         return False
