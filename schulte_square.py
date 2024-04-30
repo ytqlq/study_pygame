@@ -7,6 +7,7 @@
 import pygame
 import random
 
+
 # from pygame.sprite import _Group
 
 font = None
@@ -21,6 +22,8 @@ def create_table():
         l_table.append(l[i:i+5])
     return l_table
     # print(l_table)
+
+
 
 class BlockNum(pygame.sprite.Sprite):
     def __init__(self, num, numpos:tuple,font = font, *groups) -> None:
@@ -55,7 +58,8 @@ class BlockNum(pygame.sprite.Sprite):
 
     def click(self,rightnum):
         pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(pos):
+        test_rect = self.rect.inflate(1.5,1.5)
+        if test_rect.collidepoint(pos):
             if self.num == rightnum:
                 self.clicked = True
             return True
@@ -64,19 +68,33 @@ class BlockNum(pygame.sprite.Sprite):
     def unclick(self):
         if self.clicked:
             self.clicked = False
-        
-        
+
+# def count_time():
+#     res_time = 0
+#     return res_time
+
+def show_res(dessurface:pygame.Surface,res_time):
+    dessurface.fill('blue')
+    res_time /= 1000
+    ft = pygame.font.Font(font,60)
+    ft_surf = ft.render(str(res_time),1,'black','grey')
+    dessurface.blit(ft_surf,ft_surf.get_rect(center = dessurface.get_rect().center))
+    # pygame.display.update()
+    # pygame.time.wait(5000)
+    # pygame.draw.rect(dessurface,'grey')
+    ...
 
 def main():
     pygame.init()
+    c = pygame.time.Clock()
     size = (600,800)
     screen = pygame.display.set_mode(size,pygame.SCALED)
-   
+    fps = 60
     table_wh = 550
     line_w = 3
     pygame.display.set_caption("Schulte Square")
 
-    bg_surf = pygame.Surface(screen.get_size())
+    res_surf = bg_surf = pygame.Surface(screen.get_size())
     bg_surf.fill('grey')
     table_surf = pygame.Surface((w := table_wh+line_w,w))
     table_rect = table_surf.get_rect(center = bg_surf.get_rect().center)
@@ -103,7 +121,14 @@ def main():
     cur_num = 1
     while running:
         if cur_num > 25:
-            print("complete.")#结束。
+            couttime = pygame.time.get_ticks()
+            show_res(res_surf,couttime)
+            screen.blit(res_surf,(0,0))
+            pygame.display.flip()
+            pygame.time.wait(5000)
+            
+            # print("complete.")#结束。
+            
             running = False
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -120,6 +145,7 @@ def main():
                 ...
         # numsp.update(screen)
         pygame.display.flip()
+        c.tick(fps)
     
 if __name__ == '__main__':
     main()
