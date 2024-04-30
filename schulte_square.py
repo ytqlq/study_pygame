@@ -7,9 +7,7 @@
 
 import pygame
 import random
-
-
-# from pygame.sprite import _Group
+import os.path
 
 font = None
 numsize = 80
@@ -24,8 +22,10 @@ def create_table():
     for i in range(0, 21, 5):
         l_table.append(l[i : i + 5])
     return l_table
-    # print(l_table)
-
+ 
+def blitfont(text, font = None,ftsize = 50,color = 'black'):
+    ft = pygame.font.Font(font,ftsize)
+    return ft.render(text,1,color)
 
 class BlockNum(pygame.sprite.Sprite):
     def __init__(self, num, numpos: tuple, font=font, *groups) -> None:
@@ -47,14 +47,7 @@ class BlockNum(pygame.sprite.Sprite):
             self.clicked = False
             return True
         return False
-        # return super().update(*args, **kwargs)
-
-    # def makeflag(self):
-    #     print('111111')
-    #     pygame.draw.arc(self.image,'red',self.image.get_rect(),0,6.28)
-    # self.image.fill('red')
-    # self.image = pygame.Surface(self.rect.size,masks='red')
-
+       
     def click(self, rightnum):
         pos = pygame.mouse.get_pos()
         # test_rect = self.rect.inflate(1.8, 1.8)
@@ -71,24 +64,23 @@ class BlockNum(pygame.sprite.Sprite):
             self.clicked = False
 
 
-# def count_time():
-#     res_time = 0
-#     return res_time
 
 
 def show_res(dessurface: pygame.Surface, res_time):
     dessurface.fill("blue")
     res_time /= 1000
     ft = pygame.font.Font(font, 60)
-    # ft_surf = ft.render(str(res_time),1,'black','grey')
+   
     ft_surf = ft.render("%0.1f" % res_time, 1, "black", "grey")
     dessurface.blit(ft_surf, ft_surf.get_rect(center=dessurface.get_rect().center))
-    # pygame.display.update()
-    # pygame.time.wait(5000)
-    # pygame.draw.rect(dessurface,'grey')
+    
 
 
 def main():
+    maindir = os.path.split(__file__)[0]
+    ftpath = os.path.join(maindir,"zh_font/heiti_GB18030.ttf")
+    
+    
     pygame.init()
     c = pygame.time.Clock()
     size = (600, 800)
@@ -118,6 +110,9 @@ def main():
             (iw, table_rect.bottom - line_w),
             width=line_w,
         )
+    ftsurf = blitfont("按顺序点击数字1-25",font=ftpath)
+    ft_rect = ftsurf.get_rect(centerx = bg_surf.get_rect().centerx,y = 30)
+    bg_surf.blit(ftsurf,ft_rect)
     screen.blit(bg_surf, (0, 0))
 
     numlist = create_table()  # 5*5二维数组
@@ -146,12 +141,9 @@ def main():
             show_res(res_surf, couttime)
             screen.blit(res_surf, (0, 0))
             pygame.display.flip()
-            # pygame.time.wait(5000)
+          
             cur_num = 0
 
-            # print("complete.")#结束。
-
-            # running = False
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
@@ -162,9 +154,7 @@ def main():
                             cur_num += 1
                         break
 
-            if e.type == pygame.MOUSEBUTTONUP:
-                ...
-        # numsp.update(screen)
+          
         pygame.display.flip()
         c.tick(fps)
 
