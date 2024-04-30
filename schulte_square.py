@@ -77,7 +77,8 @@ def show_res(dessurface:pygame.Surface,res_time):
     dessurface.fill('blue')
     res_time /= 1000
     ft = pygame.font.Font(font,60)
-    ft_surf = ft.render(str(res_time),1,'black','grey')
+    # ft_surf = ft.render(str(res_time),1,'black','grey')
+    ft_surf = ft.render("%0.1f"%res_time,1,'black','grey')
     dessurface.blit(ft_surf,ft_surf.get_rect(center = dessurface.get_rect().center))
     # pygame.display.update()
     # pygame.time.wait(5000)
@@ -125,11 +126,12 @@ def main():
             show_res(res_surf,couttime)
             screen.blit(res_surf,(0,0))
             pygame.display.flip()
-            pygame.time.wait(5000)
+            # pygame.time.wait(5000)
+            cur_num = 0
             
             # print("complete.")#结束。
             
-            running = False
+            # running = False
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
