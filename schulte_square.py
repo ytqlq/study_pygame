@@ -8,6 +8,7 @@
 import pygame
 import random
 import os.path
+import shelve
 
 font = None
 numsize = 80
@@ -78,10 +79,9 @@ class BlockNum(pygame.sprite.Sprite):
 
 
 def main():
+
     maindir = os.path.split(__file__)[0]
     ftpath = os.path.join(maindir,"zh_font/heiti_GB18030.ttf")
-    
-    
     pygame.init()
     c = pygame.time.Clock()
     size = (600, 800)
@@ -91,7 +91,7 @@ def main():
     line_w = 3
     pygame.display.set_caption("Schulte Square")
 
-    res_surf = bg_surf = pygame.Surface(screen.get_size())
+    bg_surf = pygame.Surface(screen.get_size())
     bg_surf.fill("grey")
     table_surf = pygame.Surface((w := table_wh + line_w, w))
     table_rect = table_surf.get_rect(center=bg_surf.get_rect().center)
@@ -134,8 +134,6 @@ def main():
 
     pygame.display.flip()
     
-    
-    
     running = True
     cur_num = 1
     while running:
@@ -156,6 +154,18 @@ def main():
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
+                with shelve.open(os.path.join(maindir,'score.db'),writeback=True) as f:
+                    f_score = f.get('highest_score')
+                    # print(f_score)
+                    if cur_num == 0:
+                        if f_score:
+                            f['highest_score'] = min(f_score,cur_time)
+                        else:
+                            f['highest_score'] = cur_time
+                        
+                    # print(f.get('highest_score'))
+                    # print(dir(f))
+                    # ...
                 running = False
             if e.type == pygame.MOUSEBUTTONDOWN:
                 for item in numsp:
