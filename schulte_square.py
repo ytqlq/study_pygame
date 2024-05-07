@@ -144,7 +144,7 @@ def main():
     score_file = os.path.join(maindir,'score.db')
     
     while running:
-        if cur_num == 0:
+        if cur_num == 0 and history_tag == False:
             screen.blit(history_surf,history_rect)
             screen.blit(save_surf,save_rect)    
         if cur_num >= 1:
@@ -180,9 +180,11 @@ def main():
                     with shelve.open(score_file) as f:
                         score = f.get("highest_score")
                     if not score:
-                        score = "No data."
-                    print(score)
-                    score_surf = blitfont(str(score))
+                        text = "No data."
+                    # print(score)
+                    else:
+                        text = "%.1f"%(score/1000)
+                    score_surf = blitfont(text)
                     score_rect = score_surf.get_rect(center = screen.get_rect().center)
                     screen.blit(back_surf,back_rect)
                     screen.blit(score_surf,score_rect)
