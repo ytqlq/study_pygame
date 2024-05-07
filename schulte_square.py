@@ -63,19 +63,9 @@ class BlockNum(pygame.sprite.Sprite):
     def unclick(self):
         if self.clicked:
             self.clicked = False
+def show_history():
+    ...
 
-
-
-
-# def show_res(dessurface: pygame.Surface, res_time,bgcolor=None):
-#     # dessurface.fill("blue")
-#     res_time /= 1000
-#     ft_surf = blitfont("%0.1f" % res_time,font,ftsize=60,bgcolor=bgcolor)
-#     # ft = pygame.font.Font(font, 60)
-   
-#     # ft_surf = ft.render("%0.1f" % res_time, 1, "black", "grey")
-#     dessurface.blit(ft_surf, ft_surf.get_rect(center=dessurface.get_rect().center))
-    
 
 
 def main():
@@ -96,6 +86,7 @@ def main():
     table_surf = pygame.Surface((w := table_wh + line_w, w))
     table_rect = table_surf.get_rect(center=bg_surf.get_rect().center)
 
+    
     for i in range(6):
         pygame.draw.line(
             bg_surf,
@@ -132,40 +123,50 @@ def main():
             blocknum.draw(screen)
             numsp.add(blocknum)
 
-    pygame.display.flip()
+    # 历史成绩按钮及保存按钮
+    bt_font_size = 50
+    history_surf = blitfont("历史成绩",font=ftpath,ftsize=bt_font_size,bgcolor='blue')
+    save_surf = blitfont("保存结果",font=ftpath, ftsize=bt_font_size,bgcolor='blue')
+    history_rect = history_surf.get_rect(x=30, y =screen.get_height()-100)
+    save_rect = history_surf.get_rect(right = screen.get_rect().right -30, y =screen.get_height()-100)
+    back_surf = blitfont("Back",font=ftpath,bgcolor='red')
+    back_rect = back_surf.get_rect(x = 0,y=0)
     
+    
+    
+    
+    
+    
+    pygame.display.flip()
+    history_tag = False
     running = True
     cur_num = 1
+    score_file = os.path.join(maindir,'score.db')
+    
     while running:
+        if cur_num == 0:
+            screen.blit(history_surf,history_rect)
+            screen.blit(save_surf,save_rect)    
         if cur_num >= 1:
             cur_time = pygame.time.get_ticks()
             timesurf = blitfont("%.1f"%(cur_time/1000),ftsize=80,bgcolor='blue')
-            time_rect = timesurf.get_rect(centerx = screen.get_width()//2, y = screen.get_height()-100)
-            
+            time_rect = timesurf.get_rect(centerx = screen.get_width()//2, y = screen.get_height()-100)            
             screen.blit(timesurf,time_rect)
         
-        if cur_num > 25:
-            # couttime = pygame.time.get_ticks()
-            # res_surf.fill('blue')
-            # show_res(res_surf, couttime,'grey')
-            # screen.blit(res_surf, (0, 0))
-            # pygame.display.flip()          
+        if cur_num > 25:                   
             cur_num = 0
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                with shelve.open(os.path.join(maindir,'score.db'),writeback=True) as f:
-                    f_score = f.get('highest_score')
-                    # print(f_score)
+                
+                with shelve.open(score_file,writeback=True) as f:
+                    f_score = f.get('highest_score')                    
                     if cur_num == 0:
                         if f_score:
                             f['highest_score'] = min(f_score,cur_time)
                         else:
-                            f['highest_score'] = cur_time
-                        
-                    # print(f.get('highest_score'))
-                    # print(dir(f))
-                    # ...
+                            f['highest_score'] = cur_time                        
+                    
                 running = False
             if e.type == pygame.MOUSEBUTTONDOWN:
                 for item in numsp:
@@ -173,7 +174,23 @@ def main():
                         if item.update(screen):
                             cur_num += 1
                         break
-
+                if history_rect.collidepoint(pygame.mouse.get_pos()) and cur_num == 0 and history_tag == False:
+                    screencp = screen.copy()
+                    screen.fill('blue')
+                    with shelve.open(score_file) as f:
+                        score = f.get("highest_score")
+                    if not score:
+                        score = "No data."
+                    print(score)
+                    score_surf = blitfont(str(score))
+                    score_rect = score_surf.get_rect(center = screen.get_rect().center)
+                    screen.blit(back_surf,back_rect)
+                    screen.blit(score_surf,score_rect)
+                    history_tag = True
+                if history_tag == True and back_rect.collidepoint(pygame.mouse.get_pos()):
+                    screen.blit(screencp,(0,0))
+                    
+                    
           
         pygame.display.flip()
         c.tick(fps)
