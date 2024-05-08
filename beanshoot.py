@@ -115,7 +115,9 @@ def gameloop():
     direct = None
     bean_body = gameObject(img_body,bean_rect,0,block_wall.x)
     bean_head = gameObject(img_head,bean_rect,0,block_wall.x)
-    zombie_role = zombie(img_zombie,rect_zombie,block_wall.rect.right,screen_width)
+    zombie_role = gameObject(img_zombie,rect_zombie,block_wall.rect.right,screen_width)
+    zombie_direct = 'left'
+    zombie_opposite_direct = 'right'
     while gamerun:
         start_x, start_y = bean_head.image_rect.center 
         for event in pygame.event.get():
@@ -143,12 +145,13 @@ def gameloop():
                     bean_head.move(direct)
                     bean_body.move(direct) 
                     direct = None
-                
-                    
-                    
                 if event.key == pygame.K_SPACE: 
                     firebean(start_x,start_y,rect_zombie_shrink,firepower,angle/180*math.pi,block_wall.rect)
-                    print(f'{angle}: fire')              
+                    print(f'{angle}: fire') 
+        if zombie_role.move(zombie_direct):
+            tmp = zombie_direct
+            zombie_direct = zombie_opposite_direct
+            zombie_opposite_direct = tmp
         screen.fill(background)
         block_wall.draw()
         bean_body.draw()
