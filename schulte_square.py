@@ -69,7 +69,7 @@ class BlockNum(pygame.sprite.Sprite):
             self.clicked = False
 
 
-def show_history(): ...
+
 
 
 def main():
@@ -185,7 +185,7 @@ def main():
                                 f_score.pop()
                         else:
                             f_score = [cur_time]
-                        print(f_score)
+                        # print(f_score)
                         f["highest_score"] = f_score
                         saved = True
 
@@ -198,20 +198,18 @@ def main():
                     screen.fill("blue")
                     with shelve.open(score_file) as f:
                         score = f.get("highest_score")
-                        print(score)
-                    # if not score:
-                    #     text = "No data."
-                    # print(score)
-                    # else:
-                    #     text = "%.1f"%(score/1000)
+                        # print(score)                  
 
                     i = 0
                     while i < 5:
                         try:
-                            text = "%d:%0.1f" % (i + 1, score[i] / 1000)
-                            print(text)
-                        except IndexError or TypeError:
-                            text = "%d:No data" % (i + 1)
+                            
+                            text = "%d: %0.1f" % (i + 1, score[i] / 1000)
+                            
+                        except IndexError: 
+                            text = "%d: No data" % (i + 1)                            
+                        except TypeError:
+                            text = "%d: No data" % (i + 1)
                         finally:
                             score_surf = blitfont(text)
                             score_rect = score_surf.get_rect(
