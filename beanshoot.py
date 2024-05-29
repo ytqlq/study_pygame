@@ -115,6 +115,8 @@ class Bullet(gameObject):
         self.angle = angle
     
     def updatepos(self,vo,speedadd=20):
+        # if self.check_boundary():
+        self.draw()
         self.vo = vo
         
         # start_y = self.image_rect.y        
@@ -124,7 +126,31 @@ class Bullet(gameObject):
         self.image_rect.x = self.start_x + vox * self.t        
         self.image_rect.y = int(self.start_y - (voy * self.t - gravity_acceleration* 1 / 2 * (self.t**2)))
         print(self.image_rect.x, self.image_rect.y)
-        self.draw()
+        
+        # else:
+        #     return False
+    
+    def check_boundary(self,):
+        if (self.image_rect.x > self.bdry_right
+            or self.image_rect.y >screen_height
+            ):
+            return False
+        return True
+
+    def chk_wall(self,rect_block_wall):
+        if self.image_rect.colliderect(rect_block_wall):
+            return True
+        return False
+        ...
+
+    def chk_zombie(self,rect_zombie):
+        if self.image_rect.colliderect(rect_zombie):
+            return True
+        return False
+        ...
+
+        
+        ...
 
 class Text:
     def __init__(self, text, color, fontsize=50) -> None:
@@ -216,11 +242,24 @@ def gameloop():
         # if fire:
         for b in bullets:
             print(f"{count}:angle:{angle}")
-            
-            b.updatepos(firepower,)
-            if b.image_rect.x > screen_width or b.image_rect.y > screen_height:
+            if b.check_boundary():
+                b.updatepos(firepower,)
+                if b.chk_wall(block_wall.rect):
+                    print('hit the wall')
+                elif b.chk_zombie(zombie_role.image_rect):
+                    print('hit the zombie')
+
+            else:
                 bullets.remove(b)
+            # if b.image_rect.x > screen_width or b.image_rect.y > screen_height:
+            #     bullets.remove(b)
                 # fire = False
+            # if not b.updatepos(firepower,):
+            #     bullets.remove(b)
+            
+            # elif not b.updatepos(firepower,):
+            #     bullets.remove(b)
+            #     ...
             count += 1
         
         screen.blit(img_grass, rect_grass)
