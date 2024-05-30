@@ -114,9 +114,12 @@ class Bullet(gameObject):
     def __init__(self, image_surf, image_rect, angle, boundary_left, boundary_right, *groups) -> None:
         super().__init__(image_surf, image_rect, boundary_left, boundary_right, *groups)
         self.t = 0
-        self.start_y = self.image_rect.y
-        self.start_x = self.image_rect.x
+        
         self.angle = angle
+        start_offset = (0,-10)
+        offset_lenght = 30
+        self.start_y = self.image_rect.centery + start_offset[1] - offset_lenght * math.sin(self.angle)
+        self.start_x = self.image_rect.centerx + start_offset[0] + offset_lenght * math.cos(self.angle)
     
     def updatepos(self,vo,speedadd=20):
         # if self.check_boundary():
