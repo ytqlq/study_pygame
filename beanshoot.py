@@ -67,7 +67,7 @@ class wall(pygame.sprite.Sprite):
     def __init__(self, bean_rect, rect_zombie, width=50) -> None:
         self.width = width
         self.height = random.randrange(10, screen_height - 50)
-        self.x = random.randrange(bean_rect.right, rect_zombie.x)
+        self.x = random.randrange(bean_rect.right+20, rect_zombie.x-20)
         self.rect = pygame.Rect(
             self.x, screen_height - self.height, self.width, self.height
         )
@@ -141,16 +141,15 @@ class Bullet(gameObject):
         if self.image_rect.colliderect(rect_block_wall):
             return True
         return False
-        ...
+     
 
-    def chk_zombie(self,rect_zombie):
-        if self.image_rect.colliderect(rect_zombie):
+    def chk_zombie(self,rect_zombie:pygame.Rect):
+        # pygame.draw.rect(screen,'red',rect_zombie)
+        rect_z = rect_zombie.inflate(-90,-30) 
+        # pygame.draw.rect(screen,'green',rect_z)
+        if self.image_rect.colliderect(rect_z):
             return True
-        return False
-        ...
-
-        
-        ...
+        return False      
 
 class Text:
     def __init__(self, text, color, fontsize=50) -> None:
@@ -189,7 +188,7 @@ def gameloop():
     direct = None
     bean_body = gameObject(img_body, bean_rect, 0, block_wall.x)
     bean_head = gameObject(img_head, bean_rect, 0, block_wall.x)
-    rect_bullet = img_bullet.get_rect(center = bean_head.image_rect.center)
+    
     # rect_bullet = pygame.draw.circle(img_bullet,"green",img_bullet.get_rect().center,5)
     zombie_role = gameObject(
         img_zombie, rect_zombie, block_wall.rect.right, screen_width
@@ -198,11 +197,13 @@ def gameloop():
     zombie_opposite_direct = "right"
     firepowershow = Text(f"firepower:{firepower}", "black")
     score_show = Text(f"score:{score}",'black')
-    fire = False
-    count = 0
+    # fire = False
+    # count = 0
     bullets = []
     while gamerun:
-        start_x, start_y = bean_head.image_rect.center
+        # start_x, start_y = bean_head.image_rect.center
+        rect_bullet = img_bullet.get_rect(center = bean_head.image_rect.center)
+        rect_bullet.move_ip(0,-20)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 gamerun = False
@@ -241,26 +242,21 @@ def gameloop():
         screen.fill(background)
         # if fire:
         for b in bullets:
-            print(f"{count}:angle:{angle}")
+            # print(f"{count}:angle:{angle}")
             if b.check_boundary():
                 b.updatepos(firepower,)
                 if b.chk_wall(block_wall.rect):
                     print('hit the wall')
+                    bullets.remove(b)
                 elif b.chk_zombie(zombie_role.image_rect):
+                    print(zombie_role.image_rect.x)
                     print('hit the zombie')
+                    bullets.remove(b)
 
             else:
                 bullets.remove(b)
-            # if b.image_rect.x > screen_width or b.image_rect.y > screen_height:
-            #     bullets.remove(b)
-                # fire = False
-            # if not b.updatepos(firepower,):
-            #     bullets.remove(b)
-            
-            # elif not b.updatepos(firepower,):
-            #     bullets.remove(b)
-            #     ...
-            count += 1
+     
+            # count += 1
         
         screen.blit(img_grass, rect_grass)
         block_wall.draw()
@@ -269,6 +265,7 @@ def gameloop():
         zombie_role.draw()
         firepowershow.write(screen, (10, 10))
         score_show.write(screen,(screen_width-score_show.fontsurf.get_width(),10))
+        # pygame.draw.circle(screen,'red',rect_bullet.center,10)
 
         pygame.display.update()
         c.tick(fps)
