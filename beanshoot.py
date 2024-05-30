@@ -129,7 +129,7 @@ class Bullet(gameObject):
         self.t += speedadd/vox
         self.image_rect.x = self.start_x + vox * self.t        
         self.image_rect.y = int(self.start_y - (voy * self.t - gravity_acceleration* 1 / 2 * (self.t**2)))
-        print(self.image_rect.x, self.image_rect.y)
+        # print(self.image_rect.x, self.image_rect.y)
         
         # else:
         #     return False
