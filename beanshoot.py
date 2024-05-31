@@ -144,11 +144,11 @@ class Bullet(gameObject):
             pygame.draw.circle(screen,ep_color,(ep_x,ep_y),ep_radius)
  
 class Text:
-    def __init__(self, text, color="black", fontsize=50) -> None:
+    def __init__(self, text, color="black", fontsize=50,font = None) -> None:
         self.text = str(text)
         self.fontsize = fontsize
         self.color = color
-        self.font = pygame.font.Font(None, fontsize)
+        self.font = pygame.font.Font(font, fontsize)
         self.updatesurf()
 
     def updatesurf(
@@ -201,8 +201,72 @@ class Bean(gameObject):
 
     def updateimage(self, image):
         self.image_surf = image
+
+class Button(Text):
+    def __init__(self, text, btn_size:tuple, color="black", fontsize=50, font=os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")) -> None:
+        super().__init__(text, color, fontsize, font)
+        self.btn_size = btn_size
+        self.active = False  
+        self.btn_surf = pygame.Surface(self.btn_size,)  
+        btn_rect = self.updatecolor()
+        self.text_pos = self.fontsurf.get_rect(center = btn_rect.center).topleft
+        self.write(self.btn_surf,self.text_pos)
+        
+        
+        
+    def updatecolor(self):
+        btn_color_list = [(192,192,192), (178,255,102)]
+        self.btn_color = btn_color_list[1] if self.active else btn_color_list[0]
+        return self.btn_surf.fill(self.btn_color,)
+            
+        
+    def updateimage(self,ds:pygame.Surface,btn_pos:tuple):
+        ds.blit(self.btn_surf,btn_pos)
+        
+        
+        
+
+    
+        
+    
+
+def preface():
+    zh_font_path = os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")
+    pre_surf = pygame.Surface((screen_width,screen_height))
+    pre_surf.fill('white')
+    intro_sentences = ['控制豌豆射手发射豌豆越过中间的墙打僵尸',"每次计时1分钟,每打倒一次僵尸得1分","重复击打已经击倒的僵尸按一次计",]
+    for i, s in enumerate(intro_sentences):
+        word = Text(s,fontsize=30,font=zh_font_path)
+        # print(pre_surf.get_rect().centerx,10+i*(word.fontsize+5)
+        word.write(pre_surf,(word.fontsurf.get_rect(centerx = pre_surf.get_rect().centerx).x,10+i*(word.fontsize*2)))
+    btn_size = (300,100)
+    btn_texts = ['开始游戏','控制说明',]
+    
+    tmp_width = screen_width/len(btn_texts)
+    boundary_space_width = int((tmp_width- btn_size[0])/2)
+    for i , s in enumerate(btn_texts):          
+        btn_left = i * int(tmp_width) + boundary_space_width
+        btn = Button(s,btn_size)    
+        btn.updateimage(pre_surf,(btn_left,screen_height-btn_size[1]-50))
+    screen.blit(pre_surf,(0,0))
+    
+    
+    
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        mouse_pos =  pygame.mouse.get_pos()
+        if 
+        pygame.display.update()
+        c.tick(1)
+        
+    
+
   
 def gameloop():
+    preface()
     fps = 10
     bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)
     rect_zombie = img_zombie.get_rect(x=screen_width - 150, y=screen_height - 150)
@@ -224,7 +288,7 @@ def gameloop():
     score_show = Text(f"score:{score}", "black")
     angle_show = Text(f"angle:{angle}", "black")
     bullets = []
-    # tag_zombie_laydown = 0
+    
     while gamerun:
 
         old_angle = angle
