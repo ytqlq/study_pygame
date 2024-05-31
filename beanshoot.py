@@ -15,68 +15,36 @@ maindir = os.path.split(os.path.abspath(__file__))[0]
 
 def load_image(img_name, scale=(75, 75)):
     img_path = os.path.join(maindir, "pics", img_name)
-    imgsurf = pygame.image.load(img_path)  # .convert()
-    
+    imgsurf = pygame.image.load(img_path)  # .convert()会破坏背景透明。
     return pygame.transform.scale(imgsurf, scale)
 
-'''
-def firebean(start_x, start_y, rect_zombie, vo, angle, block_rect, speedadd=40):
-    fire = True
-    t = 0
-    original_x = start_x
-    original_y = start_y
-    vox = vo * math.cos(angle)
-    voy = vo * math.sin(angle)
-    while fire:
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-        rect_bullet = pygame.draw.circle(screen, "red", (original_x, original_y), 10)
-        if rect_bullet.colliderect(rect_zombie):
-            print("Hit the target.")
-            return True
-            # fire = False
-        original_x = int(vox * t + start_x)
-        original_y = int(start_y - (voy * t - gravity_acceleration * 1 / 2 * (t**2)))
-        if (
-            original_x > screen_width
-            or original_y > screen_height
-            or rect_bullet.colliderect(block_rect)
-        ):  
-            fire = False
-        t += speedadd / vox
-        pygame.display.update()
-        c.tick(60)
-    return False
-'''
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Bean Shoot")
-# img_body = load_image("beanbody.png")
-# img_head = load_image("beanhead.png")
 img_zombie = load_image("zoombie.png", (87, 143))
+img_zombie_laydown = pygame.transform.rotate(img_zombie,-90)
+# screen.blit(img_zombie_laydown,(20,20))
+# while True:
+#     pygame.display.update()
+#     ...
 img_grass = load_image("grass.png")
 img_grass = pygame.transform.scale(img_grass, (screen_width, 50))
-img_bullet = load_image("bullet.png")# todo 
-img_bullet = pygame.transform.scale(img_bullet,(20,20))
-# img_bullet = pygame.Surface((10,10))
-beans_ind_list = [0,15,30,45,60,75,85]
+img_bullet = load_image("bullet.png")
+img_bullet = pygame.transform.scale(img_bullet, (20, 20))
+beans_ind_list = [0, 15, 30, 45, 60, 75, 85]
 dic_img_bean = dict()
 for bean_angle in beans_ind_list:
-    dic_img_bean[bean_angle] = load_image(f"beans/bean{bean_angle}.png",(80,108))
-
+    dic_img_bean[bean_angle] = load_image(f"beans/bean{bean_angle}.png", (80, 108))
 
 
 class wall(pygame.sprite.Sprite):
     def __init__(self, bean_rect, rect_zombie, width=50) -> None:
         self.width = width
         self.height = random.randrange(50, screen_height - 100)
-        self.x = random.randrange(bean_rect.right+20, rect_zombie.x-20)
+        self.x = random.randrange(bean_rect.right + 20, rect_zombie.x - 20)
         self.rect = pygame.Rect(
             self.x, screen_height - self.height, self.width, self.height
         )
-        # pygame.draw.rect(screen,'red',self.rect)
 
     def draw(self):
         screen.fill("black", self.rect)
@@ -112,57 +80,78 @@ class gameObject(pygame.sprite.Sprite):
                 arrive_boundary = True
         return arrive_boundary
 
+
 class Bullet(gameObject):
-    def __init__(self, image_surf, image_rect, angle, vo, boundary_left, boundary_right, *groups) -> None:
+    def __init__(
+        self, image_surf, image_rect, angle, vo, boundary_left, boundary_right, *groups
+    ) -> None:
         super().__init__(image_surf, image_rect, boundary_left, boundary_right, *groups)
         self.t = 0
-        
+
         self.angle = angle
-        start_offset = (0,-10)
+        start_offset = (0, -10)
         offset_lenght = 30
-        self.start_y = self.image_rect.centery + start_offset[1] - offset_lenght * math.sin(self.angle)
-        self.start_x = self.image_rect.centerx + start_offset[0] + offset_lenght * math.cos(self.angle)
+        self.start_y = (
+            self.image_rect.centery
+            + start_offset[1]
+            - offset_lenght * math.sin(self.angle)
+        )
+        self.start_x = (
+            self.image_rect.centerx
+            + start_offset[0]
+            + offset_lenght * math.cos(self.angle)
+        )
         self.vo = vo
-    
-    def updatepos(self,speedadd=15):
-        # if self.check_boundary():
+
+    def updatepos(self, speedadd=15):
         self.draw()
-        
-        
-        # start_y = self.image_rect.y        
         vox = self.vo * math.cos(self.angle)
         voy = self.vo * math.sin(self.angle)
-        self.t += speedadd/vox
-        self.image_rect.x = self.start_x + vox * self.t        
-        self.image_rect.y = int(self.start_y - (voy * self.t - gravity_acceleration* 1 / 2 * (self.t**2)))
-        # print(self.image_rect.x, self.image_rect.y)
-        
-        # else:
-        #     return False
-    
-    def check_boundary(self,):
-        if (self.image_rect.x > self.bdry_right
-            or self.image_rect.y >screen_height
-            ):
+        if vox != 0:
+            self.t += speedadd / vox
+            self.image_rect.x = self.start_x + vox * self.t
+            self.image_rect.y = int(
+                self.start_y - (voy * self.t - gravity_acceleration * 1 / 2 * (self.t**2))
+            )
+
+    def check_boundary(
+        self,
+    ):
+        if self.image_rect.x > self.bdry_right:
+            return False
+        if self.image_rect.y > screen_height -img_grass.get_height()//2:#砸到草地上爆炸。考虑草地的高度遮挡，所以减一个值。
+            self._explode()
             return False
         return True
 
-    def chk_wall(self,rect_block_wall):
+    def chk_wall(self, rect_block_wall):
         if self.image_rect.colliderect(rect_block_wall):
+            self._explode()
             return True
         return False
-     
 
-    def chk_zombie(self,rect_zombie:pygame.Rect):
-        # pygame.draw.rect(screen,'red',rect_zombie)
-        rect_z = rect_zombie.inflate(-90,-30) 
-        # pygame.draw.rect(screen,'green',rect_z)
+    def chk_zombie(self, rect_zombie: pygame.Rect):
+        rect_z = rect_zombie.inflate(-20, -10)
         if self.image_rect.colliderect(rect_z):
+            self._explode()
             return True
-        return False      
+        return False
+    
+    def _explode(self,):
+        ep_range = 50       
+        ep_color_list = ['blue','green','red']
+        ep_count = random.randrange(3,10)
+        for i in range(ep_count):
+            ep_x = self.image_rect.x + random.randrange(-ep_range,ep_range)
+            ep_y = self.image_rect.y + random.randrange(-ep_range, ep_range)
+            ep_color = random.choice(ep_color_list)
+            ep_radius = random.randrange(3,6)
+            pygame.draw.circle(screen,ep_color,(ep_x,ep_y),ep_radius)
+        
+
 
 class Text:
-    def __init__(self, text, color='black', fontsize=50) -> None:
+    def __init__(self, text, color="black", fontsize=50) -> None:
         self.text = str(text)
         self.fontsize = fontsize
         self.color = color
@@ -182,22 +171,54 @@ class Text:
         self.text = text
         self.updatesurf()
 
-class Bean(gameObject):
+class Zombie(gameObject):
     def __init__(self, image_surf, image_rect, boundary_left, boundary_right, *groups) -> None:
         super().__init__(image_surf, image_rect, boundary_left, boundary_right, *groups)
+        self.laydown = False
+    
+    def updateimage(self,):
+        if self.laydown:
+            self._hitdown()
+            # print('-'*20)
+            # pygame.time.wait(2000)
+            # self.laydown = False
+        else:
+            self._standup()
+        self.draw()
+    
+    def move(self, direct):
+        if not self.laydown:
+            return super().move(direct)
+    
+    
         
+    def _hitdown(self,):        
+        self.image_surf = img_zombie_laydown
+        self.image_rect = self.image_surf.get_rect(center = self.image_rect.center)
+        
+    def _standup(self,):
+        self.image_surf = img_zombie
+        self.image_rect = self.image_surf.get_rect(center = self.image_rect.center)
+        
+            
+       
+
+class Bean(gameObject):
+    def __init__(
+        self, image_surf, image_rect, boundary_left, boundary_right, *groups
+    ) -> None:
+        super().__init__(image_surf, image_rect, boundary_left, boundary_right, *groups)
+
     def updateimage(self, image):
         self.image_surf = image
         
 
+
 def gameloop():
     fps = 10
-    bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)  
-      
+    bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)
     rect_zombie = img_zombie.get_rect(x=screen_width - 150, y=screen_height - 150)
-    rect_zombie_shrink = rect_zombie.inflate(-80, -10)
     rect_grass = img_grass.get_rect(bottom=screen_height)
-    
     firepower = 100
     score = 0
     gamerun = True
@@ -205,25 +226,21 @@ def gameloop():
     block_wall = wall(bean_rect, rect_zombie)
     direct = None
     bean_0 = Bean(dic_img_bean[angle], bean_rect, 0, block_wall.x)
-    # bean_head = gameObject(img_head, bean_rect, 0, block_wall.x)
-    
-    # rect_bullet = pygame.draw.circle(img_bullet,"green",img_bullet.get_rect().center,5)
-    zombie_role = gameObject(
+    zombie_role = Zombie(
         img_zombie, rect_zombie, block_wall.rect.right, screen_width
     )
     zombie_direct = "left"
     zombie_opposite_direct = "right"
     firepowershow = Text(f"firepower:{firepower}", "black")
-    score_show = Text(f"score:{score}",'black')
-    angle_show = Text(f"angle:{angle}",'black')
-    # fire = False
-    # count = 0
+    score_show = Text(f"score:{score}", "black")
+    angle_show = Text(f"angle:{angle}", "black")
     bullets = []
+    # tag_zombie_laydown = 0
     while gamerun:
-        # start_x, start_y = bean_head.image_rect.center
+
         old_angle = angle
-        rect_bullet = img_bullet.get_rect(center = bean_0.image_rect.center)
-        rect_bullet.move_ip(0,-20)
+        rect_bullet = img_bullet.get_rect(center=bean_0.image_rect.center)
+        rect_bullet.move_ip(0, -20)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 gamerun = False
@@ -239,69 +256,89 @@ def gameloop():
                     if angle == 70:
                         angle = 75
                 elif event.key == pygame.K_LEFT:
-                    direct = "left"                    
+                    direct = "left"
                 elif event.key == pygame.K_RIGHT:
-                    direct = "right"                    
+                    direct = "right"
                 elif event.key == pygame.K_a:
                     firepower -= 10
-                    firepowershow.updatetext("firepower:%d" % firepower) 
+                    if firepower <0:
+                        firepower = 0
+                    firepowershow.updatetext("firepower:%d" % firepower)
                 elif event.key == pygame.K_d:
                     firepower += 10
+                    if firepower > 200:
+                        firepower = 200
                     firepowershow.updatetext("firepower:%d" % firepower)
             if event.type == pygame.KEYUP:
                 if direct is not None:
                     bean_0.move(direct)
-                    # bean_body.move(direct)
                     direct = None
-                if event.key == pygame.K_SPACE:                
-                    # b = Bullet(img_bullet,rect_bullet.copy(),0,screen_width)
-                    bullets.append(Bullet(img_bullet,rect_bullet.copy(),angle/180 * math.pi,firepower, 0,screen_width))
-                    # fire = True
+                if event.key == pygame.K_SPACE:
+                    bullets.append(
+                        Bullet(
+                            img_bullet,
+                            rect_bullet.copy(),
+                            angle / 180 * math.pi,
+                            firepower,
+                            0,
+                            screen_width,
+                        )
+                    )
         if angle != old_angle:
             bean_0.updateimage(dic_img_bean[angle])
             angle_show.text = f"angle:{angle}"
             angle_show.updatesurf()
+        
         if zombie_role.move(zombie_direct):
             tmp = zombie_direct
             zombie_direct = zombie_opposite_direct
             zombie_opposite_direct = tmp
         screen.fill(background)
-        # if fire:
+        screen.blit(img_grass, rect_grass)
         for b in bullets:
-            # print(f"{count}:angle:{angle}")
             if b.check_boundary():
                 b.updatepos()
                 if b.chk_wall(block_wall.rect):
-                    print('hit the wall')
+                    print("hit the wall")
                     bullets.remove(b)
                 elif b.chk_zombie(zombie_role.image_rect):
-                    # print(zombie_role.image_rect.x)
-                    print('hit the zombie')
+                    print("hit the zombie")
                     score += 1
                     score_show.text = f"score:{score}"
                     score_show.updatesurf()
+                    zombie_role.laydown = True
+                    tag_zombie_laydown = pygame.time.get_ticks()
                     bullets.remove(b)
-
             else:
                 bullets.remove(b)
-     
-            # count += 1
-        
-        screen.blit(img_grass, rect_grass)
         block_wall.draw()
         bean_0.draw()
-        # bean_head.draw()
-        zombie_role.draw()
+        # tag_zombie_laydown += 1
+        if zombie_role.laydown:
+            if (pygame.time.get_ticks() - tag_zombie_laydown) > 2000:
+                zombie_role.laydown = False
+        # zombie_role.laydown = True # test
+        zombie_role.updateimage()
+        # zombie_role.draw()
         firepowershow.write(screen, (10, 10))
-        score_show.write(screen,(screen_width-score_show.fontsurf.get_width(),10))
-        angle_show.write(screen,(angle_show.fontsurf.get_rect(centerx = screen.get_rect().centerx, y = 10).topleft))
-        # pygame.draw.circle(screen,'red',rect_bullet.center,10)
+        score_show.write(screen, (screen_width - score_show.fontsurf.get_width(), 10))
+        angle_show.write(
+            screen,
+            (
+                angle_show.fontsurf.get_rect(
+                    centerx=screen.get_rect().centerx, y=10
+                ).topleft
+            ),
+        )
 
         pygame.display.update()
+        
         c.tick(fps)
-       
+
     pygame.quit()
     quit()
 
 
-gameloop()
+if __name__ == "__main__":
+
+    gameloop()
