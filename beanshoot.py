@@ -90,7 +90,7 @@ class Bullet(gameObject):
 
         self.angle = angle
         start_offset = (0, -10)
-        offset_lenght = 30
+        offset_lenght = 20
         self.start_y = (
             self.image_rect.centery
             + start_offset[1]
@@ -103,7 +103,7 @@ class Bullet(gameObject):
         )
         self.vo = vo
 
-    def updatepos(self, speedadd=15):
+    def updatepos(self, speedadd=10):
         self.draw()
         vox = self.vo * math.cos(self.angle)
         voy = self.vo * math.sin(self.angle)
@@ -119,7 +119,7 @@ class Bullet(gameObject):
     ):
         if self.image_rect.x > self.bdry_right:
             return False
-        if self.image_rect.y > screen_height -img_grass.get_height()//2:#砸到草地上爆炸。考虑草地的高度遮挡，所以减一个值。
+        if self.image_rect.y > screen_height: #-img_grass.get_height():#砸到草地上爆炸。考虑草地的高度遮挡，所以减一个值。
             self._explode()
             return False
         return True
@@ -144,6 +144,8 @@ class Bullet(gameObject):
         for i in range(ep_count):
             ep_x = self.image_rect.x + random.randrange(-ep_range,ep_range)
             ep_y = self.image_rect.y + random.randrange(-ep_range, ep_range)
+            if self.image_rect.y > screen_height:
+                ep_y = screen_height -10 +  random.randrange(-ep_range, ep_range)
             ep_color = random.choice(ep_color_list)
             ep_radius = random.randrange(3,6)
             pygame.draw.circle(screen,ep_color,(ep_x,ep_y),ep_radius)
@@ -218,6 +220,7 @@ def gameloop():
     fps = 10
     bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)
     rect_zombie = img_zombie.get_rect(x=screen_width - 150, y=screen_height - 150)
+    
     rect_grass = img_grass.get_rect(bottom=screen_height)
     firepower = 100
     score = 0
