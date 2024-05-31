@@ -18,15 +18,10 @@ def load_image(img_name, scale=(75, 75)):
     imgsurf = pygame.image.load(img_path)  # .convert()会破坏背景透明。
     return pygame.transform.scale(imgsurf, scale)
 
-
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Bean Shoot")
 img_zombie = load_image("zoombie.png", (87, 143))
 img_zombie_laydown = pygame.transform.rotate(img_zombie,-90)
-# screen.blit(img_zombie_laydown,(20,20))
-# while True:
-#     pygame.display.update()
-#     ...
 img_grass = load_image("grass.png")
 img_grass = pygame.transform.scale(img_grass, (screen_width, 50))
 img_bullet = load_image("bullet.png")
@@ -48,7 +43,6 @@ class wall(pygame.sprite.Sprite):
 
     def draw(self):
         screen.fill("black", self.rect)
-
 
 class gameObject(pygame.sprite.Sprite):
     def __init__(
@@ -79,7 +73,6 @@ class gameObject(pygame.sprite.Sprite):
                 self.image_rect.right = self.bdry_right
                 arrive_boundary = True
         return arrive_boundary
-
 
 class Bullet(gameObject):
     def __init__(
@@ -149,9 +142,7 @@ class Bullet(gameObject):
             ep_color = random.choice(ep_color_list)
             ep_radius = random.randrange(3,6)
             pygame.draw.circle(screen,ep_color,(ep_x,ep_y),ep_radius)
-        
-
-
+ 
 class Text:
     def __init__(self, text, color="black", fontsize=50) -> None:
         self.text = str(text)
@@ -201,10 +192,7 @@ class Zombie(gameObject):
     def _standup(self,):
         self.image_surf = img_zombie
         self.image_rect = self.image_surf.get_rect(center = self.image_rect.center)
-        
-            
-       
-
+  
 class Bean(gameObject):
     def __init__(
         self, image_surf, image_rect, boundary_left, boundary_right, *groups
@@ -213,9 +201,7 @@ class Bean(gameObject):
 
     def updateimage(self, image):
         self.image_surf = image
-        
-
-
+  
 def gameloop():
     fps = 10
     bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)
