@@ -303,11 +303,12 @@ def gameloop():
                     bullets.remove(b)
                 elif b.chk_zombie(zombie_role.image_rect):
                     print("hit the zombie")
-                    score += 1
-                    score_show.text = f"score:{score}"
-                    score_show.updatesurf()
-                    zombie_role.laydown = True
-                    tag_zombie_laydown = pygame.time.get_ticks()
+                    if not zombie_role.laydown:
+                        score += 1
+                        score_show.text = f"score:{score}"
+                        score_show.updatesurf()
+                        zombie_role.laydown = True
+                        tag_zombie_laydown = pygame.time.get_ticks()
                     bullets.remove(b)
             else:
                 bullets.remove(b)
