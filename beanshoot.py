@@ -203,15 +203,16 @@ class Bean(gameObject):
         self.image_surf = image
 
 class Button(Text):
-    def __init__(self, text, btn_size:tuple, color="black", fontsize=50, font=os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")) -> None:
+    def __init__(self, text, btn_size:tuple, btn_pos, color="black", fontsize=50, font=os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")) -> None:
         super().__init__(text, color, fontsize, font)
         self.btn_size = btn_size
+        self.btn_pos = btn_pos
         self.active = False  
         self.btn_surf = pygame.Surface(self.btn_size,)  
         btn_rect = self.updatecolor()
         self.text_pos = self.fontsurf.get_rect(center = btn_rect.center).topleft
         self.write(self.btn_surf,self.text_pos)
-        
+        self.ds_btn_rect = pygame.Rect(self.btn_pos,self.btn_size)
         
         
     def updatecolor(self):
@@ -220,8 +221,10 @@ class Button(Text):
         return self.btn_surf.fill(self.btn_color,)
             
         
-    def updateimage(self,ds:pygame.Surface,btn_pos:tuple):
-        ds.blit(self.btn_surf,btn_pos)
+    def updateimage(self,ds:pygame.Surface): 
+        self.updatecolor()
+        self.write(self.btn_surf,self.text_pos)       
+        ds.blit(self.btn_surf,self.ds_btn_rect)
         
         
         
@@ -244,12 +247,14 @@ def preface():
     
     tmp_width = screen_width/len(btn_texts)
     boundary_space_width = int((tmp_width- btn_size[0])/2)
+    buttons = []
     for i , s in enumerate(btn_texts):          
         btn_left = i * int(tmp_width) + boundary_space_width
-        btn = Button(s,btn_size)    
-        btn.updateimage(pre_surf,(btn_left,screen_height-btn_size[1]-50))
-    screen.blit(pre_surf,(0,0))
+        btn = Button(s,btn_size,(btn_left,screen_height-btn_size[1]-50))
+        buttons.append(btn)    
+        btn.updateimage(pre_surf)
     
+    screen.blit(pre_surf,(0,0))
     
     
     while True:
@@ -258,9 +263,16 @@ def preface():
                 pygame.quit()
                 quit()
         mouse_pos =  pygame.mouse.get_pos()
-        if 
+        for b in buttons:
+            if b.ds_btn_rect.collidepoint(mouse_pos):
+                # print('111111')
+                b.active = True
+            else:
+                b.active = False            
+            b.updateimage(screen)
+        
         pygame.display.update()
-        c.tick(1)
+        c.tick(30)
         
     
 
