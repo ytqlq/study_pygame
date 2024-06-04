@@ -11,7 +11,7 @@ c = pygame.time.Clock()
 background = "white"
 gravity_acceleration = 10
 maindir = os.path.split(os.path.abspath(__file__))[0]
-
+zh_font_path = os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")
 
 def load_image(img_name, scale=(75, 75)):
     img_path = os.path.join(maindir, "pics", img_name)
@@ -226,7 +226,27 @@ class Button(Text):
         self.write(self.btn_surf,self.text_pos)       
         ds.blit(self.btn_surf,self.ds_btn_rect)
         
-        
+def show_control_page():
+    print('How to control') # todo
+    control_page = pygame.Surface((screen_width,screen_height))
+    control_texts = ['press key "SPACE": fire beans', 'press key "LEFT":moveleft','press key "RIGHT": move right','press key "UP" : add the fire angle','press key "DOWN": reduce the fire angle','press key "A":power down','press key "D":power up']
+    control_page_color = 'white'
+    control_page.fill(control_page_color)
+    for i, s in enumerate(control_texts):
+        word = Text(s,fontsize=30,font=zh_font_path)
+        # print(pre_surf.get_rect().centerx,10+i*(word.fontsize+5)
+        word.write(control_page,(word.fontsurf.get_rect(centerx = control_page.get_rect().centerx).x,10+i*(word.fontsize*2)))
+    screen.blit(control_page,(0,0))
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        pygame.display.update()
+        c.tick(10)
+    
+    
+    ...
         
 
     
@@ -234,7 +254,7 @@ class Button(Text):
     
 
 def preface():
-    zh_font_path = os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")
+    
     pre_surf = pygame.Surface((screen_width,screen_height))
     pre_surf.fill('white')
     intro_sentences = ['控制豌豆射手发射豌豆越过中间的墙打僵尸',"每次计时1分钟,每打倒一次僵尸得1分","重复击打已经击倒的僵尸按一次计",]
@@ -252,16 +272,25 @@ def preface():
         btn_left = i * int(tmp_width) + boundary_space_width
         btn = Button(s,btn_size,(btn_left,screen_height-btn_size[1]-50))
         buttons.append(btn)    
-        btn.updateimage(pre_surf)
-    
+        btn.updateimage(pre_surf)    
     screen.blit(pre_surf,(0,0))
     
     
     while True:
+        
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed()[0]:
+                    m_click_pos = pygame.mouse.get_pos()
+                    if buttons[0].ds_btn_rect.collidepoint(m_click_pos):                    
+                        gameloop()
+                    elif buttons[1].ds_btn_rect.collidepoint(m_click_pos):
+                        show_control_page()                
+                
+                
         mouse_pos =  pygame.mouse.get_pos()
         for b in buttons:
             if b.ds_btn_rect.collidepoint(mouse_pos):
@@ -278,7 +307,7 @@ def preface():
 
   
 def gameloop():
-    preface()
+    # preface()
     fps = 10
     bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)
     rect_zombie = img_zombie.get_rect(x=screen_width - 150, y=screen_height - 150)
@@ -406,5 +435,5 @@ def gameloop():
 
 
 if __name__ == "__main__":
-
-    gameloop()
+    preface()
+    # gameloop()
