@@ -12,6 +12,7 @@ background = "white"
 gravity_acceleration = 10
 maindir = os.path.split(os.path.abspath(__file__))[0]
 zh_font_path = os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")
+btn_size = (300,100)
 
 def load_image(img_name, scale=(75, 75)):
     img_path = os.path.join(maindir, "pics", img_name)
@@ -227,7 +228,7 @@ class Button(Text):
         ds.blit(self.btn_surf,self.ds_btn_rect)
         
 def show_control_page():
-    print('How to control') # todo
+    # print('How to control') # todo
     control_page = pygame.Surface((screen_width,screen_height))
     control_texts = ['press key "SPACE": fire beans', 'press key "LEFT":moveleft','press key "RIGHT": move right','press key "UP" : add the fire angle','press key "DOWN": reduce the fire angle','press key "A":power down','press key "D":power up']
     control_page_color = 'white'
@@ -236,17 +237,29 @@ def show_control_page():
         word = Text(s,fontsize=30,font=zh_font_path)
         # print(pre_surf.get_rect().centerx,10+i*(word.fontsize+5)
         word.write(control_page,(word.fontsurf.get_rect(centerx = control_page.get_rect().centerx).x,10+i*(word.fontsize*2)))
+    back_button = Button('返回',btn_size,(0,screen_height-btn_size[1]-50))
+    back_button.ds_btn_rect.centerx = screen_width/2
+    back_button.updateimage(control_page)
     screen.blit(control_page,(0,0))
     while True:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed()[0]:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if back_button.ds_btn_rect.collidepoint(mouse_pos):   
+                        preface()                                            
+                        break
+            
         pygame.display.update()
         c.tick(10)
+    # preface()
+        
     
     
-    ...
+
         
 
     
@@ -262,7 +275,7 @@ def preface():
         word = Text(s,fontsize=30,font=zh_font_path)
         # print(pre_surf.get_rect().centerx,10+i*(word.fontsize+5)
         word.write(pre_surf,(word.fontsurf.get_rect(centerx = pre_surf.get_rect().centerx).x,10+i*(word.fontsize*2)))
-    btn_size = (300,100)
+    
     btn_texts = ['开始游戏','控制说明',]
     
     tmp_width = screen_width/len(btn_texts)
@@ -303,7 +316,12 @@ def preface():
         pygame.display.update()
         c.tick(30)
         
-    
+def show_left_time(starttime):
+    gametime = 
+    endtime = pygame.time.get_ticks()
+    left_time = endtime - starttime
+    Text("Lefttime:{}".format())
+    ...
 
   
 def gameloop():
@@ -329,9 +347,11 @@ def gameloop():
     score_show = Text(f"score:{score}", "black")
     angle_show = Text(f"angle:{angle}", "black")
     bullets = []
-    
+    starttime = pygame.time.get_ticks()
     while gamerun:
-
+        endtime = pygame.time.get_ticks()
+        print(endtime-starttime)
+        
         old_angle = angle
         rect_bullet = img_bullet.get_rect(center=bean_0.image_rect.center)
         rect_bullet.move_ip(0, -20)
@@ -407,14 +427,11 @@ def gameloop():
             else:
                 bullets.remove(b)
         block_wall.draw()
-        bean_0.draw()
-        # tag_zombie_laydown += 1
+        bean_0.draw()        
         if zombie_role.laydown:
             if (pygame.time.get_ticks() - tag_zombie_laydown) > 2000:
-                zombie_role.laydown = False
-        # zombie_role.laydown = True # test
-        zombie_role.updateimage()
-        # zombie_role.draw()
+                zombie_role.laydown = False        
+        zombie_role.updateimage()        
         firepowershow.write(screen, (10, 10))
         score_show.write(screen, (screen_width - score_show.fontsurf.get_width(), 10))
         angle_show.write(
@@ -425,9 +442,9 @@ def gameloop():
                 ).topleft
             ),
         )
-
-        pygame.display.update()
-        
+        if endtime - starttime >= (60*1000):
+            gamerun = False
+        pygame.display.update()        
         c.tick(fps)
 
     pygame.quit()
