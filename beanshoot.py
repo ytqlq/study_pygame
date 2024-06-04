@@ -13,7 +13,7 @@ gravity_acceleration = 10
 maindir = os.path.split(os.path.abspath(__file__))[0]
 zh_font_path = os.path.join(maindir, "zh_font", "heiti_GB18030.ttf")
 btn_size = (300,100)
-
+gametime = 1000*60
 def load_image(img_name, scale=(75, 75)):
     img_path = os.path.join(maindir, "pics", img_name)
     imgsurf = pygame.image.load(img_path)  # .convert()会破坏背景透明。
@@ -172,10 +172,7 @@ class Zombie(gameObject):
     
     def updateimage(self,):
         if self.laydown:
-            self._hitdown()
-            # print('-'*20)
-            # pygame.time.wait(2000)
-            # self.laydown = False
+            self._hitdown()            
         else:
             self._standup()
         self.draw()
@@ -226,20 +223,56 @@ class Button(Text):
         self.updatecolor()
         self.write(self.btn_surf,self.text_pos)       
         ds.blit(self.btn_surf,self.ds_btn_rect)
+    
+    def chk_collide_mospos(self,mouse_pos):
+        return self.ds_btn_rect.collidepoint(mouse_pos)
         
-def show_control_page():
-    # print('How to control') # todo
+ 
+
+def update_button(buttons):
+    mouse_pos =  pygame.mouse.get_pos()
+    for b in buttons:
+        if b.ds_btn_rect.collidepoint(mouse_pos):            
+            b.active = True
+        else:
+            b.active = False            
+        b.updateimage(screen)    
+
+def make_all_page_buttons(btn_texts,ds_surf:pygame.Surface):
+    tmp_width = screen_width/len(btn_texts)
+    boundary_space_width = int((tmp_width- btn_size[0])/2)
+    buttons = []
+    for i , s in enumerate(btn_texts):          
+        btn_left = i * int(tmp_width) + boundary_space_width
+        btn = Button(s,btn_size,(btn_left,screen_height-btn_size[1]-50))
+        buttons.append(btn)    
+        btn.updateimage(ds_surf)  
+    return buttons
+
+def click_btns_func(mouse_pos,buttons,fuc_list):
+    for b, f in zip(buttons,fuc_list):
+        if b.chk_collide_mospos(mouse_pos):
+            f()
+def myquit():
+    pygame.quit()
+    quit()
+
+def show_text_onsurf(text_list, ds_surf:pygame.Surface,fontsize = 30,first_line_y = 10, line_space = 50):
+    for i, s in enumerate(text_list):
+        word = Text(s,fontsize=fontsize,font=zh_font_path)        
+        word.write(ds_surf,(word.fontsurf.get_rect(centerx = ds_surf.get_rect().centerx).x,first_line_y+i*(word.fontsize+line_space)))
+
+def show_control_page():    
     control_page = pygame.Surface((screen_width,screen_height))
     control_texts = ['press key "SPACE": fire beans', 'press key "LEFT":moveleft','press key "RIGHT": move right','press key "UP" : add the fire angle','press key "DOWN": reduce the fire angle','press key "A":power down','press key "D":power up']
     control_page_color = 'white'
     control_page.fill(control_page_color)
-    for i, s in enumerate(control_texts):
-        word = Text(s,fontsize=30,font=zh_font_path)
-        # print(pre_surf.get_rect().centerx,10+i*(word.fontsize+5)
-        word.write(control_page,(word.fontsurf.get_rect(centerx = control_page.get_rect().centerx).x,10+i*(word.fontsize*2)))
-    back_button = Button('返回',btn_size,(0,screen_height-btn_size[1]-50))
-    back_button.ds_btn_rect.centerx = screen_width/2
-    back_button.updateimage(control_page)
+    show_text_onsurf(control_texts,control_page,line_space=30)
+    # for i, s in enumerate(control_texts):
+    #     word = Text(s,fontsize=30,font=zh_font_path)        
+    #     word.write(control_page,(word.fontsurf.get_rect(centerx = control_page.get_rect().centerx).x,10+i*(word.fontsize*2)))
+    btn_texts = ['返回']
+    buttons = make_all_page_buttons(btn_texts,control_page)   
     screen.blit(control_page,(0,0))
     while True:
         for e in pygame.event.get():
@@ -249,48 +282,21 @@ def show_control_page():
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
                     mouse_pos = pygame.mouse.get_pos()
-                    if back_button.ds_btn_rect.collidepoint(mouse_pos):   
-                        preface()                                            
-                        break
-            
+                    click_btns_func(mouse_pos,buttons,[preface])                    
+        update_button(buttons)            
         pygame.display.update()
-        c.tick(10)
-    # preface()
-        
-    
-    
+        c.tick(30)
+   
 
-        
-
-    
-        
-    
-
-def preface():
-    
+def preface():    
     pre_surf = pygame.Surface((screen_width,screen_height))
     pre_surf.fill('white')
     intro_sentences = ['控制豌豆射手发射豌豆越过中间的墙打僵尸',"每次计时1分钟,每打倒一次僵尸得1分","重复击打已经击倒的僵尸按一次计",]
-    for i, s in enumerate(intro_sentences):
-        word = Text(s,fontsize=30,font=zh_font_path)
-        # print(pre_surf.get_rect().centerx,10+i*(word.fontsize+5)
-        word.write(pre_surf,(word.fontsurf.get_rect(centerx = pre_surf.get_rect().centerx).x,10+i*(word.fontsize*2)))
-    
+    show_text_onsurf(intro_sentences,pre_surf,first_line_y=50,)     
     btn_texts = ['开始游戏','控制说明',]
-    
-    tmp_width = screen_width/len(btn_texts)
-    boundary_space_width = int((tmp_width- btn_size[0])/2)
-    buttons = []
-    for i , s in enumerate(btn_texts):          
-        btn_left = i * int(tmp_width) + boundary_space_width
-        btn = Button(s,btn_size,(btn_left,screen_height-btn_size[1]-50))
-        buttons.append(btn)    
-        btn.updateimage(pre_surf)    
-    screen.blit(pre_surf,(0,0))
-    
-    
-    while True:
-        
+    buttons = make_all_page_buttons(btn_texts,pre_surf)        
+    screen.blit(pre_surf,(0,0))   
+    while True:        
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
@@ -298,38 +304,52 @@ def preface():
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
                     m_click_pos = pygame.mouse.get_pos()
-                    if buttons[0].ds_btn_rect.collidepoint(m_click_pos):                    
-                        gameloop()
-                    elif buttons[1].ds_btn_rect.collidepoint(m_click_pos):
-                        show_control_page()                
-                
-                
-        mouse_pos =  pygame.mouse.get_pos()
-        for b in buttons:
-            if b.ds_btn_rect.collidepoint(mouse_pos):
-                # print('111111')
-                b.active = True
-            else:
-                b.active = False            
-            b.updateimage(screen)
-        
+                    click_btns_func(m_click_pos,buttons,[gameloop,show_control_page])
+                  
+        update_button(buttons)  
         pygame.display.update()
         c.tick(30)
         
-def show_left_time(starttime):
-    gametime = 
+def show_left_time(starttime,pos):
     endtime = pygame.time.get_ticks()
-    left_time = endtime - starttime
-    Text("Lefttime:{}".format())
-    ...
+    left_time = gametime - (endtime - starttime)
+    left_time_text = Text("Lefttime:{}".format(int(left_time/1000)))
+    left_time_text.write(screen,pos)
+    return endtime
+
+def show_gameover_page(score): 
+    over_page = pygame.Surface((screen_width,screen_height))
+    over_texts = ['GameOver!!!!', 'Your Score is {}'.format(score)]
+    over_page_color = 'white'
+    over_page.fill(over_page_color)
+    show_text_onsurf(over_texts,over_page,first_line_y=100,line_space=100,fontsize=60)  
+    btn_texts = ['结束',"再试一次"]    
+    buttons = make_all_page_buttons(btn_texts,over_page)
+    screen.blit(over_page,(0,0))
+    gameover = True
+    while gameover:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed()[0]:
+                    mouse_pos = pygame.mouse.get_pos()
+                    click_btns_func(mouse_pos,buttons,[myquit,gameloop])
+                    # if buttons[0].chk_collide_mospos(mouse_pos):
+                    #     pygame.quit()
+                    #     quit()
+                    # elif buttons[1].chk_collide_mospos(mouse_pos):
+                    #     gameloop()
+        update_button(buttons)
+        pygame.display.update()
+        c.tick(30)
 
   
-def gameloop():
-    # preface()
+def gameloop():    
     fps = 10
     bean_rect = dic_img_bean[0].get_rect(x=0, y=screen_height - 120)
     rect_zombie = img_zombie.get_rect(x=screen_width - 150, y=screen_height - 150)
-    
     rect_grass = img_grass.get_rect(bottom=screen_height)
     firepower = 100
     score = 0
@@ -348,16 +368,14 @@ def gameloop():
     angle_show = Text(f"angle:{angle}", "black")
     bullets = []
     starttime = pygame.time.get_ticks()
-    while gamerun:
-        endtime = pygame.time.get_ticks()
-        print(endtime-starttime)
-        
+    while gamerun:        
         old_angle = angle
         rect_bullet = img_bullet.get_rect(center=bean_0.image_rect.center)
         rect_bullet.move_ip(0, -20)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                gamerun = False
+                pygame.quit()
+                quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     angle += 15
@@ -413,10 +431,10 @@ def gameloop():
             if b.check_boundary():
                 b.updatepos()
                 if b.chk_wall(block_wall.rect):
-                    print("hit the wall")
+                    # print("hit the wall")
                     bullets.remove(b)
                 elif b.chk_zombie(zombie_role.image_rect):
-                    print("hit the zombie")
+                    # print("hit the zombie")
                     if not zombie_role.laydown:
                         score += 1
                         score_show.text = f"score:{score}"
@@ -442,15 +460,18 @@ def gameloop():
                 ).topleft
             ),
         )
-        if endtime - starttime >= (60*1000):
+        endtime = show_left_time(starttime,(10,100))     
+        # print(endtime - starttime)   
+        if endtime - starttime >= gametime:
+            # print('timeout')
             gamerun = False
         pygame.display.update()        
         c.tick(fps)
-
+    show_gameover_page(score)
     pygame.quit()
     quit()
 
 
 if __name__ == "__main__":
     preface()
-    # gameloop()
+   
