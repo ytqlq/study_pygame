@@ -69,7 +69,8 @@ class picBlock(pygame.sprite.Sprite):
 
     def move(self, offset, new_mouse_pos):  # offset define toplet- mouseposition
         if self.clicked:            
-            self.pos = tuple((of + mp) for of, mp in zip(offset, new_mouse_pos))
+            pos = tuple((of + mp) for of, mp in zip(offset, new_mouse_pos))
+            self.update(pos)
             
 
 
@@ -135,23 +136,37 @@ def main():
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 return
-            if e.type == pygame.MOUSEBUTTONUP:
-                for obj in block_group.sprites():
-                    clicked_mouse_pos = pygame.mouse.get_pos()
-
-                    if obj.rect_on_screen.collidepoint(clicked_mouse_pos):
-                        if not obj.clicked:
-                            offset = tuple(
-                                (tl - m_pos)
-                                for tl, m_pos in zip(obj.pos, clicked_mouse_pos)
-                            )
-                            obj.clicked = True
-                            clicked_pic = True
-                            target_block = obj
-                        else:
-                            obj.clicked = False
-                            clicked_pic = False
-                        break
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed()[0]:
+                    # print('left button')
+                    for obj in reversed(block_group.sprites()):
+                        clicked_mouse_pos = pygame.mouse.get_pos()
+                        if obj.rect_on_screen.collidepoint(clicked_mouse_pos):
+                            if not clicked_pic:
+                                if  not obj.clicked:
+                                    offset = tuple(
+                                        (tl - m_pos)
+                                        for tl, m_pos in zip(obj.pos, clicked_mouse_pos)
+                                    )
+                                    obj.clicked = True
+                                    clicked_pic = True
+                                    target_block = obj
+                                    print(target_block.pic_no)
+                                    block_group.remove(obj)
+                                    block_group.add(obj)# remove + add,使移动的块最后绘制，即保证在最上面。
+                                
+                            elif clicked_pic:
+                                target_block.clicked = False
+                                clicked_pic = False
+                            break
+                # elif pygame.mouse.get_pressed()[2]:
+                #     print('right button')
+                #     m_pos = pygame.mouse.get_pos()
+                #     for obj in block_group.sprites():
+                #         if obj.rect_on_screen.collidepoint(m_pos):
+                #             obj.clicked = False
+                #             clicked_pic = False
+                #             break
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -160,9 +175,11 @@ def main():
             target_block.move(offset, mouse_pos)
         # screen.fill(bg_color)
         screen.blit(bg_surf,(0,0))
-        for obj in block_group:
+        
+        for obj in block_group:    
+                    
             obj.draw(screen)
-
+        
         pygame.display.update()
         c.tick(fps)
 
