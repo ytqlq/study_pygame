@@ -140,13 +140,27 @@ def main():
                     # machine.claw.direction = 'down'
                 # if e.key == pygame.K_c:
                 #     machine.coin += 1
+                elif e.key == pygame.K_LEFT:
+                    if not start_catch:
+                        machine.claw.direction = 'left'
+                        
+                elif e.key == pygame.K_RIGHT:
+                    if not start_catch:
+                        machine.claw.direction = 'right'
+                        
+                    
         # print(pygame.time.get_ticks() - starttime)
-        if not start_catch and  pygame.time.get_ticks() - starttime > 2000:   
+        if not start_catch:
+            machine.claw.move()
+        # elif start_catch:
+        #     machine.claw.direction = None  
+        if not start_catch and  pygame.time.get_ticks() - starttime >10000:   
             # print('timeout')
             start_catch = True   
             # print(start_catch)      
         if start_catch:            
             machine.catch_act()
+        machine.update()
         pygame.display.update()
         c.tick(30)
     

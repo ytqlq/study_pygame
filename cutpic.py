@@ -52,9 +52,10 @@ class picBlock(pygame.sprite.Sprite):
         self.pos = (pos_x, pos_y)
         self.rect_on_screen = pygame.Rect(self.pos, self.size)
         self.clicked = False
+        self.rect_right_on_screen = pygame.Rect(self.right_pos, self.size)
 
     def update(self, pos) -> None:
-        self.pos = pos
+        self.pos = pos        
         self.rect_on_screen.topleft = self.pos
 
     def draw(self, ds_surface: pygame.Surface):
@@ -71,8 +72,24 @@ class picBlock(pygame.sprite.Sprite):
         if self.clicked:            
             pos = tuple((of + mp) for of, mp in zip(offset, new_mouse_pos))
             self.update(pos)
-            
 
+    
+
+def chk_click_pos(mouse_pos, sprite_group):
+    for obj in sprite_group:
+        if obj.rect_right_on_screen.collidepoint(mouse_pos):
+            return obj.rect_right_on_screen.topleft
+
+def chk_exist_pos(group,last_sprite):
+    for obj in reversed(group.sprites()):
+        if obj!= last_sprite and obj.pos == last_sprite.pos:
+            obj.clicked = True
+            group.remove(obj)
+            group.add(obj)
+            return obj
+    return None
+    
+    
 
 def main():
     fps = 24
@@ -125,12 +142,11 @@ def main():
                 rowcount=table_rowcount,
                 line_w_boundary=boundary_line_width,
             )
+            print((i,j),tmp_pic_block.size)
             # tmp_pic_block.draw(scale_img_surf, screen)
             block_group.add(tmp_pic_block)
-
     pygame.display.update()
     clicked_pic = False
-
     gameRun = True
     while gameRun:
         for e in pygame.event.get():
@@ -139,7 +155,7 @@ def main():
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
                     # print('left button')
-                    for obj in reversed(block_group.sprites()):
+                    for obj in reversed(block_group.sprites()):# reverserd当与两块都有交集时，先拿最后绘制上，即最上面的（与break配合）。
                         clicked_mouse_pos = pygame.mouse.get_pos()
                         if obj.rect_on_screen.collidepoint(clicked_mouse_pos):
                             if not clicked_pic:
@@ -154,32 +170,25 @@ def main():
                                     print(target_block.pic_no)
                                     block_group.remove(obj)
                                     block_group.add(obj)# remove + add,使移动的块最后绘制，即保证在最上面。
-                                
                             elif clicked_pic:
-                                target_block.clicked = False
+                                target_block.clicked = False 
                                 clicked_pic = False
+                                if table_rect.collidepoint(clicked_mouse_pos):
+                                    click_table_block_topleft = chk_click_pos(clicked_mouse_pos,block_group)
+                                    target_block.update(click_table_block_topleft)
+                                    target_block = chk_exist_pos( block_group,target_block)
+                                    if target_block is not None:
+                                        clicked_pic = True
+                                    
                             break
-                # elif pygame.mouse.get_pressed()[2]:
-                #     print('right button')
-                #     m_pos = pygame.mouse.get_pos()
-                #     for obj in block_group.sprites():
-                #         if obj.rect_on_screen.collidepoint(m_pos):
-                #             obj.clicked = False
-                #             clicked_pic = False
-                #             break
+               
 
         mouse_pos = pygame.mouse.get_pos()
-
-        if clicked_pic:
-            # print(clicked_mouse_pos,mouse_pos)
-            target_block.move(offset, mouse_pos)
-        # screen.fill(bg_color)
-        screen.blit(bg_surf,(0,0))
-        
-        for obj in block_group:    
-                    
+        if clicked_pic:        
+            target_block.move(offset, mouse_pos)        
+        screen.blit(bg_surf,(0,0))        
+        for obj in block_group: 
             obj.draw(screen)
-        
         pygame.display.update()
         c.tick(fps)
 
